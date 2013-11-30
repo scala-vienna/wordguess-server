@@ -1,7 +1,5 @@
 package actors
 
-//import akka.actor._
-//import com.clashcode.web.controllers.Application
 import clashcode.messages._
 import akka.actor.ActorRef
 import clashcode.logic.Game
@@ -13,6 +11,7 @@ import clashcode.logic.Player
  */
 class GameServerActor extends TickingActor with GameLogic with ActorPlayers {
 
+  // TODO: read from file or something like that
   override val words = Seq("hello", "world")
 
   def receive = {
