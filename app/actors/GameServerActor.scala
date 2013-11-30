@@ -5,7 +5,7 @@ import clashcode._
 import com.clashcode.web.controllers.Application
 import scala.concurrent.duration.FiniteDuration
 import java.util.concurrent.TimeUnit
-import org.joda.time.{Seconds, DateTime}
+import org.joda.time.{ Seconds, DateTime }
 import scala.collection.mutable
 import play.api.libs.concurrent.Execution.Implicits._
 import akka.pattern.{ ask, pipe }
@@ -22,13 +22,13 @@ import akka.cluster.ClusterEvent.CurrentClusterState
 import clashcode.PrisonerResponse
 import clashcode.PrisonerRequest
 
+import ImplicitConversions._
 
 /**
- * Continuously sends game requests to all participants, keeps player high score.
- * Keeps list of upcoming tournament pairings
+ * 
  */
-class HostingActor extends Actor {
-
+class GameServerActor extends Actor {
+  
   /** list of players (max 100) */
   val players = mutable.Map.empty[String, Player]
 
@@ -42,16 +42,24 @@ class HostingActor extends Actor {
   val upcoming = mutable.Queue.empty[Game]
 
   /** timer for running tournament rounds */
-  context.system.scheduler.schedule(FiniteDuration(1, TimeUnit.SECONDS), FiniteDuration(1, TimeUnit.SECONDS)) {
+  context.system.scheduler.schedule(initialDelay = 1 second, interval = 1 second) {
     self ! TournamentTick()
   }
 
   def receive = {
 
-    case Hello(rawName) => handleHello(sender, rawName, false)
+    case RequestGame(playerId) => {
+      
+    }
+    
+    case MakeGuess(letter) => {
+      
+    }
+    
+    case Hello(rawName) => handleHello(sender, rawName, cluster = false)
 
     // handle ongoing tournaments
-    case _ : TournamentTick =>
+    case _: TournamentTick => {
 
       // lets check the list of running games for timeouts
       val now = DateTime.now
@@ -78,8 +86,7 @@ class HostingActor extends Actor {
       val activePlayers = players.values.toSeq.filter(_.active)
       if (running.length == 0 && upcoming.length == 0) {
 
-        if (activePlayers.length >= 2)
-        {
+        if (activePlayers.length >= 2) {
           // round robin tournament
           val newGames = activePlayers.flatMap(player => {
 
@@ -87,18 +94,15 @@ class HostingActor extends Actor {
             val opponents = activePlayers.filter(_.name > player.name)
             opponents.map(opponent => Game(List(
               Turn(player, now, now.plusSeconds(1), None, 0),
-              Turn(opponent, now, now.plusSeconds(1), None, 0)
-            )))
+              Turn(opponent, now, now.plusSeconds(1), None, 0))))
 
           })
 
           logStatus("Starting new tournament with " + activePlayers.length + " players, " + newGames.length + " games.")
-          upcoming.enqueue(newGames : _*)
-        }
-        else if (activePlayers.length == 1) {
+          upcoming.enqueue(newGames: _*)
+        } else if (activePlayers.length == 1) {
           logStatus("Only one player connected (hello, " + activePlayers.head.name + ")")
-        }
-        else {
+        } else {
           logStatus("No players connected")
         }
 
@@ -107,7 +111,7 @@ class HostingActor extends Actor {
       //logStatus("No players connected x")
 
       // start upcoming games (use clone of upcoming queue, since we're modifying it inside)
-      List(upcoming : _*).foreach(upcomingGame => {
+      List(upcoming: _*).foreach(upcomingGame => {
 
         val runningPlayers = running.flatMap(_.players)
         val availablePlayers = activePlayers.diff(runningPlayers)
@@ -128,7 +132,7 @@ class HostingActor extends Actor {
           upcomingGame.players.foreach(player => {
             val otherPlayer = upcomingGame.players.filter(_ != player).headOption.getOrElse(player)
             (player.ref ? PrisonerRequest(otherPlayer.name)).foreach {
-              case response : PrisonerResponse => self ! PlayerResponse(player, otherPlayer, response)
+              case response: PrisonerResponse => self ! PlayerResponse(player, otherPlayer, response)
               case x =>
                 val response = "Unknown message " + x.toString + " from " + player.name
                 player.ref ! response
@@ -146,9 +150,8 @@ class HostingActor extends Actor {
       }
 
       // update high score list to web socket
-      Application.push(players.values.toSeq.sortBy(- _.points))
-
-
+      Application.push(players.values.toSeq.sortBy(-_.points))
+    }
     // handle response of a player
     case PlayerResponse(player, otherPlayer, response) =>
 
@@ -157,8 +160,7 @@ class HostingActor extends Actor {
 
       val maybeGame = running.find(g => g.hasPlayers(Seq(player, otherPlayer)))
 
-      if (!maybeGame.isDefined)
-      {
+      if (!maybeGame.isDefined) {
         val response = "Sorry " + player.name + ", your response came too late.";
         logStatus(response)
         player.ref ! response
@@ -251,8 +253,7 @@ class HostingActor extends Actor {
     sender ! response
 
     // remove old players
-    while (players.size > 100)
-    {
+    while (players.size > 100) {
       val lastPlayer = players.values.toSeq.sortBy(p => Seconds.secondsBetween(now, p.lastSeen).getSeconds).last
       players -= lastPlayer.name
     }
@@ -272,7 +273,7 @@ class HostingActor extends Actor {
 
     // add game to archive, prune out old games
     games.enqueue(game)
-    while(games.length > 5000) games.dequeue()
+    while (games.length > 5000) games.dequeue()
 
     // update player statistics
     game.players.foreach(player => {
@@ -311,26 +312,33 @@ case class TournamentTick()
 case class PlayerResponse(player: Player, otherPlayer: Player, response: PrisonerResponse)
 
 class Player(val name: String,
-             var ref: ActorRef, // actor endpoint for communication with this player
-             var points: Int, // total score
-             var games: Int, // number of games completed
-             var ping: Int, // average response time in ms
-             var lastSeen: DateTime, // last message from this player
-             var active: Boolean, // does player answer to requests?
-             var coop: Double, // how cooperative is this player?
-             var cluster: Boolean) // is player discovered in cluster?
+  var ref: ActorRef, // actor endpoint for communication with this player
+  var points: Int, // total score
+  var games: Int, // number of games completed
+  var ping: Int, // average response time in ms
+  var lastSeen: DateTime, // last message from this player
+  var active: Boolean, // does player answer to requests?
+  var coop: Double, // how cooperative is this player?
+  var cluster: Boolean) // is player discovered in cluster?
 
 case class Turn(player: Player,
-                start: DateTime,
-                response: DateTime, /** 1 sec after start of turn, or actual response time of player */
-                cooperate: Option[Boolean], /** true, false, or none for timeout */
-                points: Int)
+  start: DateTime,
+  response: DateTime,
+  /** 1 sec after start of turn, or actual response time of player */
+  cooperate: Option[Boolean],
+  /** true, false, or none for timeout */
+  points: Int)
 
 case class Game(turns: List[Turn]) {
+
   if (turns.length != 2) throw new IllegalArgumentException("turns")
-  def timedOut(now: DateTime) : List[Turn] = turns.filter(t => t.cooperate.isEmpty && t.response.isBefore(now))
-  def hasPlayers(seq: Seq[Player]) : Boolean = seq.forall(players.contains)
+
+  def timedOut(now: DateTime): List[Turn] = turns.filter(t => t.cooperate.isEmpty && t.response.isBefore(now))
+
+  def hasPlayers(seq: Seq[Player]): Boolean = seq.forall(players.contains)
+
   lazy val players = turns.map(_.player)
+
 }
 
 case object ResetStats
