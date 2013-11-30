@@ -1,4 +1,4 @@
-package clashcode.messages
+package clashcode.wordguess.messages
 
 // =============
 // Messages broadcast to all players

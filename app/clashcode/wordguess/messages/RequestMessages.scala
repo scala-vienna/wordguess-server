@@ -1,4 +1,4 @@
-package clashcode.messages
+package clashcode.wordguess.messages
 
 // =============
 // Messages sent to the server

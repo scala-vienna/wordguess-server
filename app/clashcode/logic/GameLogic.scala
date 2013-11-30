@@ -1,6 +1,6 @@
 package clashcode.logic
 
-import clashcode.messages.GameStatus
+import clashcode.wordguess.messages.GameStatus
 import scala.collection.mutable
 import scala.util.Random
 

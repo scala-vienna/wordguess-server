@@ -4,7 +4,6 @@ import akka.actor._
 import play.api.libs.concurrent.Execution.Implicits._
 
 import clashcode.ImplicitConversions._
-import clashcode.messages._
 
 case class ActorTick()
 

@@ -1,6 +1,6 @@
 package actors
 
-import clashcode.messages._
+import clashcode.wordguess.messages._
 import akka.actor.ActorRef
 import clashcode.logic.Game
 import clashcode.logic.GameLogic
