@@ -43,7 +43,9 @@ class GameServerActor extends TickingActor with GameLogic with ActorPlayers {
       if (!game.isSolved)
     } yield {
       sender ! game.status
-      // TODO: broadcast correct guess to all other players
+      allPlayerActorsExcept(sender) foreach { otherPlayerActor =>
+        otherPlayerActor ! SuccessfulGuess(letter, word = game.status.word)
+      }
     }) getOrElse {
       sender ! NotPlayingError()
     }

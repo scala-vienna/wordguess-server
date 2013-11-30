@@ -36,5 +36,9 @@ trait ActorPlayers {
   def findActorPlayer(actor: ActorRef): Option[ActorPlayer] = {
     actorPlayers.find(actorPlayer => actorPlayer.actor == actor)
   }
+  
+  def allPlayerActorsExcept(actorToExclude:ActorRef): Seq[ActorRef] = {
+    actorPlayers.map(_.actor) - actorToExclude
+  }
 
 }
