@@ -1,4 +1,4 @@
-name := "clashcode"
+name := "wordguess-server"
 
 version := "1.0-SNAPSHOT"
 
