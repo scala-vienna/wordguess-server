@@ -10,6 +10,12 @@ case class ActorPlayer(player: Player, actor: ActorRef)
 trait ActorPlayers {
   val actorPlayers = mutable.Buffer[ActorPlayer]()
 
+  def removeExistingActorPlayerNamed(playerName: String) {
+    findActorPlayer(playerName) map { actorPlayer =>
+      actorPlayers -= actorPlayer
+    }
+  }
+
   def findActorPlayerCreatingIfNeeded(actor: ActorRef, playerName: String): ActorPlayer = {
     val optExisting = findActorPlayer(actor)
     optExisting getOrElse {
@@ -17,6 +23,10 @@ trait ActorPlayers {
       actorPlayers += ActorPlayer(Player(playerName), actor)
       newActorPlayer
     }
+  }
+
+  def findActorPlayer(playerName: String): Option[ActorPlayer] = {
+    actorPlayers.find(actorPlayer => actorPlayer.player.name == playerName)
   }
 
   def findActorPlayer(player: Player): Option[ActorPlayer] = {

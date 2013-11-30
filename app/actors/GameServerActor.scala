@@ -21,6 +21,7 @@ class GameServerActor extends TickingActor with GameLogic with ActorPlayers {
   }
 
   def handleGameRequest(playerName: String, sender: ActorRef) {
+    removeExistingActorPlayerNamed(playerName)
     val actorPlayer = findActorPlayerCreatingIfNeeded(sender, playerName)
     val player = actorPlayer.player
     val game = getGame(player) getOrElse {
@@ -34,7 +35,8 @@ class GameServerActor extends TickingActor with GameLogic with ActorPlayers {
       val player = actorPlayer.player
       makeGuess(player, letter)
       getGame(player) map { game =>
-        sender ! game.status
+        if (!game.isSolved)
+          sender ! game.status
       }
     }
   }
