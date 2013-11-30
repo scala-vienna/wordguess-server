@@ -6,7 +6,6 @@ import play.api.libs.iteratee.{Iteratee, Concurrent}
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.Logger
 import play.api.libs.json.{Json, JsValue}
-import actors.{ResetStats, Player, Game}
 import akka.actor.ActorRef
 
 object Application extends Controller {
@@ -15,26 +14,29 @@ object Application extends Controller {
 
   var maybeHostingActor = Option.empty[ActorRef]
 
-  def push(game: Game) = channel.push(
-    Json.obj("game" ->
-      Json.toJson(game.turns.map(t =>
-        Json.obj(
-          "name" -> t.player.name,
-          "cooperate" -> t.cooperate,
-          "points" -> t.points)))))
+  case class Game()
+  case class Player()
+  
+//  def push(game: Game) = channel.push(
+//    Json.obj("game" ->
+//      Json.toJson(game.turns.map(t =>
+//        Json.obj(
+//          "name" -> t.player.name,
+//          "cooperate" -> t.cooperate,
+//          "points" -> t.points)))))
 
-  def push(players: Seq[Player]) = channel.push(
-    Json.obj("players" ->
-      Json.toJson(players.map(p =>
-        Json.obj(
-          "name" -> p.name,
-          "active" -> p.active,
-          "cluster" -> p.cluster,
-          "coop" -> p.coop,
-          "games" -> p.games,
-          "lastSeen" -> p.lastSeen,
-          "ping" -> p.ping,
-          "points" -> p.points)))))
+//  def push(players: Seq[Player]) = channel.push(
+//    Json.obj("players" ->
+//      Json.toJson(players.map(p =>
+//        Json.obj(
+//          "name" -> p.name,
+//          "active" -> p.active,
+//          "cluster" -> p.cluster,
+//          "coop" -> p.coop,
+//          "games" -> p.games,
+//          "lastSeen" -> p.lastSeen,
+//          "ping" -> p.ping,
+//          "points" -> p.points)))))
 
 
   def push(message: String) = channel.push(Json.obj("status" -> message))
@@ -57,8 +59,8 @@ object Application extends Controller {
         val action = (msg \ "action").asOpt[String].getOrElse("")
 
         // reset stats command
-        if (action == "reset")
-          maybeHostingActor.foreach(_ ! ResetStats)
+//        if (action == "reset")
+//          maybeHostingActor.foreach(_ ! ResetStats)
 
     } mapDone {
       _ => Logger.info("removed listener")
