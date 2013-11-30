@@ -15,7 +15,11 @@ trait GameLogic {
 
   def words: Seq[String]
 
+  val solvedWordIndexes = mutable.Buffer[Int]()
+
   val games = mutable.Map[Player, Game]()
+
+  def hasRemainingWords = availableWordIndexes.size > 0
 
   def createGame(player: Player): Game = {
     val wordIdx = randomAvailableWordIndex
@@ -52,19 +56,25 @@ trait GameLogic {
 
   private def checkIfWonOrLost(game: Game, player: Player) {
     if (game.status.word.forall(_.isDefined)) {
+      addSolvedWordIndex(game)
       onGameWon(player, game)
     } else if (game.status.remainingTries == 0) {
       onGameLost(player, game)
     }
   }
 
+  private def addSolvedWordIndex(game: Game) {
+    solvedWordIndexes += game.wordIdx
+  }
+
+  private def availableWordIndexes: Set[Int] = {
+    val inGameWordIndexes = games.values.map(_.wordIdx)
+    val unavailableWordIndexes: Set[Int] =
+      (inGameWordIndexes ++ solvedWordIndexes).toSet
+    ((0 until words.length).toSet -- unavailableWordIndexes)
+  }
+
   private def randomAvailableWordIndex: Int = {
-    def availableWordIndexes: Set[Int] =
-      ((0 until words.length).toSet -- takenWordIndexes)
-
-    def takenWordIndexes: Set[Int] =
-      games.values.map(_.wordIdx).toSet
-
     Random.shuffle(availableWordIndexes).head
   }
 

@@ -12,8 +12,8 @@ class GameLogicSuite extends FunSuite with BeforeAndAfter {
   before {
     logic = new GameLogic() {
       val words = Seq("hello", "world")
-      def onGameWon(player:Player, game:Game){}
-      def onGameLost(player:Player, game:Game) {}
+      def onGameWon(player: Player, game: Game) {}
+      def onGameLost(player: Player, game: Game) {}
     }
   }
 
@@ -77,10 +77,10 @@ class GameLogicSuite extends FunSuite with BeforeAndAfter {
     val logic = new GameLogic() {
       val words = Seq("hello")
       var wasCalled = false
-      def onGameWon(player:Player, game:Game) {
+      def onGameWon(player: Player, game: Game) {
         wasCalled = true
       }
-      def onGameLost(player:Player, game:Game) {}
+      def onGameLost(player: Player, game: Game) {}
     }
     val game = logic.createGame(player)
     logic.makeGuess(player, 'h')
@@ -95,14 +95,39 @@ class GameLogicSuite extends FunSuite with BeforeAndAfter {
     val logic = new GameLogic() {
       val words = Seq("abc")
       var wasCalled = false
-      def onGameWon(player:Player, game:Game){}
-      def onGameLost(player:Player, game:Game) {
+      def onGameWon(player: Player, game: Game) {}
+      def onGameLost(player: Player, game: Game) {
         wasCalled = true
       }
     }
     val game = logic.createGame(player)
-    (1 to logic.triesPerGame).foreach( _ => logic.makeGuess(player, 'x'))
+    (1 to logic.triesPerGame).foreach(_ => logic.makeGuess(player, 'x'))
     assert(logic.wasCalled, "Should have been called upon loosing the game")
-  }  
+  }
+
+  trait HelloGameLogicTest {
+    val player = Player("testPlayer")
+    val logic = new GameLogic() {
+      val words = Seq("hello")
+      def onGameWon(player: Player, game: Game) {}
+      def onGameLost(player: Player, game: Game) {}
+    }
+    val game = logic.createGame(player)
+    def guessLetters(letters:String) = letters.foreach(c => logic.makeGuess(player, c))
+  }
   
+  test("a guessed word should added to the solved words") {
+    new HelloGameLogicTest {
+      guessLetters("helo")
+      assert(logic.solvedWordIndexes === Seq(0))
+    }
+  }
+
+  test("when the last word has been guessed, there are no more words remaining") {
+    new HelloGameLogicTest {
+      guessLetters("helo")
+      assert(logic.hasRemainingWords === false)
+    }
+  }
+
 }
