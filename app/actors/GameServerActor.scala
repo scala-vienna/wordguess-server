@@ -30,7 +30,7 @@ class GameServerActor extends TickingActor with GameLogic with ActorPlayers {
       }
       sender ! game.status
     } else {
-      sender ! NoAvailableGames
+      sender ! NoAvailableGames()
     }
   }
 
