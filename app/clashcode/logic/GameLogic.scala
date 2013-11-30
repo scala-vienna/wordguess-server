@@ -12,7 +12,9 @@ case class Game(wordIdx: Int, var status: GameStatus) {
 trait GameLogic {
 
   val triesPerGame = 5
+
   def words: Seq[String]
+
   val games = mutable.Map[Player, Game]()
 
   def createGame(player: Player): Game = {
@@ -49,20 +51,20 @@ trait GameLogic {
   }
 
   private def checkIfWonOrLost(game: Game, player: Player) {
-    if(game.status.word.forall(_.isDefined)) {
+    if (game.status.word.forall(_.isDefined)) {
       onGameWon(player, game)
-    } else if(game.status.remainingTries == 0) {
+    } else if (game.status.remainingTries == 0) {
       onGameLost(player, game)
     }
   }
 
   private def randomAvailableWordIndex: Int = {
-    def takenWordIndexes: Set[Int] = {
-      games.values.map { _.wordIdx }.toSet
-    }
-    def availableWordIndexes: Seq[Int] = {
-      ((0 until words.length).toSet -- takenWordIndexes).toSeq.sorted
-    }
+    def availableWordIndexes: Set[Int] =
+      ((0 until words.length).toSet -- takenWordIndexes)
+
+    def takenWordIndexes: Set[Int] =
+      games.values.map(_.wordIdx).toSet
+
     Random.shuffle(availableWordIndexes).head
   }
 
