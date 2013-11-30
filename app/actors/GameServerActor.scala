@@ -25,23 +25,27 @@ class GameServerActor extends TickingActor with GameLogic with ActorPlayers {
       removeExistingActorPlayerNamed(playerName)
       val actorPlayer = findActorPlayerCreatingIfNeeded(sender, playerName)
       val player = actorPlayer.player
-      val game = getGame(player) getOrElse {
+      val newOrExistingGame = getGame(player) getOrElse {
         createGame(player)
       }
-      sender ! game.status
+      sender ! newOrExistingGame.status
     } else {
       sender ! NoAvailableGames()
     }
   }
 
   def handleGuess(sender: ActorRef, letter: Char) {
-    findActorPlayer(actor = sender) map { actorPlayer =>
-      val player = actorPlayer.player
-      makeGuess(player, letter)
-      getGame(player) map { game =>
-        if (!game.isSolved)
-          sender ! game.status
-      }
+    (for {
+      actorPlayer <- findActorPlayer(actor = sender)
+      player = actorPlayer.player
+      _ = makeGuess(player, letter)
+      game <- getGame(player)
+      if (!game.isSolved)
+    } yield {
+      sender ! game.status
+      // TODO: broadcast correct guess to all other players
+    }) getOrElse {
+      sender ! NotPlayingError()
     }
   }
 
