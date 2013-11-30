@@ -1,47 +1,65 @@
 package actors
 
-import akka.actor._
-import clashcode._
-import com.clashcode.web.controllers.Application
-import scala.concurrent.duration.FiniteDuration
-import java.util.concurrent.TimeUnit
-import org.joda.time.{ Seconds, DateTime }
-import scala.collection.mutable
-import play.api.libs.concurrent.Execution.Implicits._
-import akka.pattern.{ ask, pipe }
-import akka.util.Timeout
-import akka.cluster.ClusterEvent._
-import play.api.Logger
-import akka.cluster.ClusterEvent.MemberRemoved
-import scala.Some
-import clashcode.Hello
-import akka.cluster.ClusterEvent.UnreachableMember
-import akka.cluster.ClusterEvent.MemberUp
-import akka.actor.Identify
-import akka.cluster.ClusterEvent.CurrentClusterState
-import clashcode.PrisonerResponse
-import clashcode.PrisonerRequest
-
-import ImplicitConversions._
+//import akka.actor._
+//import com.clashcode.web.controllers.Application
+import clashcode.messages._
+import akka.actor.ActorRef
+import clashcode.logic.Game
+import clashcode.logic.GameLogic
+import clashcode.logic.Player
 
 /**
- * 
+ *
  */
-class GameServerActor extends Actor {
+class GameServerActor extends TickingActor with GameLogic with ActorPlayers {
 
-  context.system.scheduler.schedule(initialDelay = 1 second, interval = 1 second) {
-    self ! TournamentTick()
-  }
+  override val words = Seq("hello", "world")
 
   def receive = {
-    case RequestGame(playerId) => {
-      
+    case RequestGame(playerName) => handleGameRequest(playerName, sender)
+    case MakeGuess(letter) => handleGuess(sender, letter)
+    case _: ActorTick => handleTick()
+  }
+
+  def handleGameRequest(playerName: String, sender: ActorRef) {
+    val actorPlayer = findActorPlayerCreatingIfNeeded(sender, playerName)
+    val player = actorPlayer.player
+    val game = getGame(player) getOrElse {
+      createGame(player)
     }
-    case MakeGuess(letter) => {
-      
-    }
-    case _: TournamentTick => {
-      
+    sender ! game.status
+  }
+
+  def handleGuess(sender: ActorRef, letter: Char) {
+    findActorPlayer(actor = sender) map { actorPlayer =>
+      val player = actorPlayer.player
+      makeGuess(player, letter)
+      getGame(player) map { game =>
+        sender ! game.status
+      }
     }
   }
+
+  override def onGameWon(player: Player, game: Game) {
+    sendGameOverMessage(player, msg = GameWon(finalStatus = game.status))
+  }
+
+  override def onGameLost(player: Player, game: Game) {
+    sendGameOverMessage(player, msg = GameLost(finalStatus = game.status))
+  }
+
+  private def sendGameOverMessage(player: Player, msg: GameOver) {
+    findActorPlayer(player) map { actorPlayer =>
+      val actor = actorPlayer.actor
+      actor ! msg
+    }
+  }
+
+  def handleTick() {
+    def purgeTimedOutGames() {
+      // TODO
+    }
+    purgeTimedOutGames()
+  }
+
 }
