@@ -122,7 +122,21 @@ class GameLogicSuite extends FunSuite with BeforeAndAfter {
       assert(logic.solvedWordIndexes === Seq(0))
     }
   }
+  
+  test("when the game is won, it's removed from the list of games") {
+    new HelloGameLogicTest {
+      guessLetters("helo")
+      assert(logic.getGame(player) === None, "Game should not be found anymore")
+    }
+  }  
 
+  test("when the game is lost, it's removed from the list of games") {
+    new HelloGameLogicTest {
+      guessLetters("xqpkn")
+      assert(logic.getGame(player) === None, "Game should not be found anymore")
+    }
+  }    
+  
   test("when the last word has been guessed, there are no more words remaining") {
     new HelloGameLogicTest {
       guessLetters("helo")

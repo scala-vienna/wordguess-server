@@ -57,10 +57,16 @@ trait GameLogic {
   private def checkIfWonOrLost(game: Game, player: Player) {
     if (game.status.word.forall(_.isDefined)) {
       addSolvedWordIndex(game)
+      removeGameOf(player)
       onGameWon(player, game)
     } else if (game.status.remainingTries == 0) {
+      removeGameOf(player)
       onGameLost(player, game)
     }
+  }
+  
+  private def removeGameOf(player:Player) {
+    games.remove(player)
   }
 
   private def addSolvedWordIndex(game: Game) {
