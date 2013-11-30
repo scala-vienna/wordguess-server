@@ -3,11 +3,14 @@ package clashcode.messages
 // =============
 // Messages sent to particular game-player(s)
 
-case class GameStarted(initialStatus: GameStatus)
 case class GameStatus(word: Seq[Option[Char]], remainingTries: Int)
 
-case class GameWon(finalStatus: GameStatus) 
-case class GameLost(finalStatus: GameStatus) 
+class GameOver
+  case class GameWon(finalStatus: GameStatus) extends GameOver 
+  case class GameLost(finalStatus: GameStatus) extends GameOver
 
-// sent to the player when there is no ongoing game with it
-case class NoOngoingGameError()  
+// Sent to the player when there is no ongoing game with her/him.
+case class NotPlayingError()
+
+// Sent when there are no more available games. Client should quit.
+case class NoAvailableGames()
