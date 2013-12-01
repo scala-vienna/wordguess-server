@@ -7,6 +7,7 @@ import play.api.libs.concurrent.Execution.Implicits._
 import play.api.Logger
 import play.api.libs.json.{Json, JsValue}
 import akka.actor.ActorRef
+import actors.ActorPlayer
 
 object Application extends Controller {
 
@@ -14,9 +15,6 @@ object Application extends Controller {
 
   var maybeHostingActor = Option.empty[ActorRef]
 
-  case class Game()
-  case class Player()
-  
 //  def push(game: Game) = channel.push(
 //    Json.obj("game" ->
 //      Json.toJson(game.turns.map(t =>
@@ -25,18 +23,13 @@ object Application extends Controller {
 //          "cooperate" -> t.cooperate,
 //          "points" -> t.points)))))
 
-//  def push(players: Seq[Player]) = channel.push(
-//    Json.obj("players" ->
-//      Json.toJson(players.map(p =>
-//        Json.obj(
-//          "name" -> p.name,
-//          "active" -> p.active,
-//          "cluster" -> p.cluster,
-//          "coop" -> p.coop,
-//          "games" -> p.games,
-//          "lastSeen" -> p.lastSeen,
-//          "ping" -> p.ping,
-//          "points" -> p.points)))))
+  def push(players: Seq[ActorPlayer]) = channel.push(
+    Json.obj("players" ->
+      Json.toJson(players.map(p =>
+        Json.obj(
+          "name" -> p.player.name,
+          "lastAction" -> p.lastAction,
+          "games" -> p.totalGames)))))
 
 
   def push(message: String) = channel.push(Json.obj("status" -> message))

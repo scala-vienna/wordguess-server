@@ -17,12 +17,12 @@ $(function() {
                 $('#players-table tbody').append(
                     $('<tr>')
                         .append($('<td>').text(p.name))
-                        .append($('<td>').text(p.points))
-                        .append($('<td>').text(Math.floor(p.coop * 100) + "%"))
+                        .append($('<td>').text(""))
+                        .append($('<td>').text(""))
                         .append($('<td>').text(p.games))
-                        .append($('<td>').text(moment(p.lastSeen).fromNow()))
-                        .append($('<td>').text(p.ping + "ms"))
-                        .append($('<td>').text((p.active ? "" : "Timeout") + " " + (p.cluster ? "Cluster" : "")))
+                        .append($('<td>').text(moment(p.lastAction).fromNow()))
+                        .append($('<td>').text(""))
+                        .append($('<td>').text(""))
                 )
             })
         }

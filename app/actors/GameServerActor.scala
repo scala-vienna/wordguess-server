@@ -5,6 +5,7 @@ import akka.actor.ActorRef
 
 import clashcode.wordguess.messages._
 import clashcode.logic._
+import com.clashcode.web.controllers.Application
 
 /**
  *
@@ -28,11 +29,13 @@ class GameServerActor extends TickingActor(intervalSecs = 5) with GameLogic with
 
   def handleGameRequest(playerName: String, sender: ActorRef) {
     if (hasRemainingWords) {
-      removeExistingActorPlayerNamed(playerName) // TODO: better remove on disconnect?
       val actorPlayer = findActorPlayerCreatingIfNeeded(sender, playerName)
-      val game = newOrExistingGameFor(actorPlayer)
-      sender ! PlayingGame(gameId = gameHash(game))
-      sender ! game.status
+      actorPlayer.totalGames += 1 // update game stats
+      val player = actorPlayer.player
+      val newOrExistingGame = getGame(player) getOrElse {
+        createGame(player)
+      }
+      sender ! newOrExistingGame.status
     } else {
       sender ! NoAvailableGames()
     }
@@ -92,12 +95,15 @@ class GameServerActor extends TickingActor(intervalSecs = 5) with GameLogic with
   private def sendGameOverMessage(player: Player, msg: GameOver) {
     findActorPlayer(player) map { actorPlayer =>
       val actor = actorPlayer.actor
-      removeExistingActorPlayerNamed(player.name)
       actor ! msg
     }
   }
 
   def handleTick() {
+
+    // send updated player list to frontend
+    Application.push(actorPlayers)
+    
     purgeTimedOutGames()
   }
 
@@ -105,7 +111,6 @@ class GameServerActor extends TickingActor(intervalSecs = 5) with GameLogic with
     actorPlayersOlderThan(timeOutSeconds) foreach { actorPlayer =>
       val player = actorPlayer.player
       removeGameOf(player)
-      removeExistingActorPlayerNamed(player.name)
       Logger.info("Removed timed-out game of: " + player.name)
     }
   }
