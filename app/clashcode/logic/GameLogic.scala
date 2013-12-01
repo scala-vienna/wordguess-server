@@ -10,7 +10,9 @@ case class Game(wordIdx: Int, var status: GameStatus) {
   def displayWord = status.word.map(c => c.getOrElse('_')).mkString
 }
 
-case class GameWord(idx: Int, word: String, playing: Boolean, solved: Boolean)
+case class GameWord(idx: Int, str: String, playing: Boolean, solved: Boolean) {
+  def htmlStr = str.replaceAll("\n", "<br/>")
+}
 
 trait GameLogic {
 
