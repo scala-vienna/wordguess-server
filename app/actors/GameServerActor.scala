@@ -13,14 +13,19 @@ import com.clashcode.web.controllers.Application
 import clashcode.logic.GameState
 import com.clashcode.web.controllers.DebugController
 
+trait GameParameters {
+  // TODO: read all this from Play's config
+  def timeOutSeconds = 5 * 60
+  def gameStateFilePath = "./game-state.txt"
+  def minGameWordLength = 5    
+}
+
 /**
  *
  */
 class GameServerActor extends TickingActor
-  with GameLogic with GameStatePersistence with ActorPlayers {
+  with GameLogic with GameStatePersistence with ActorPlayers with GameParameters {
 
-  val timeOutSeconds = 5 * 60
-  val gameStateFilePath = "./game-state.txt"
 
   override val gameState = initializeGameState()
 
@@ -28,7 +33,7 @@ class GameServerActor extends TickingActor
   var tokens = Seq.empty[Token]
 
   def initializeGameState(): GameState = {
-    ensureGameStateFile(gameStateFilePath, "./source-text.txt", minGameWordLength = 5)
+    ensureGameStateFile(gameStateFilePath, "./source-text.txt", minGameWordLength)
     loadFromFile(gameStateFilePath)
   }
 
