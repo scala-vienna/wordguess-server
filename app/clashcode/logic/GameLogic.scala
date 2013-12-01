@@ -66,7 +66,7 @@ trait GameLogic {
     }
   }
   
-  private def removeGameOf(player:Player) {
+  def removeGameOf(player:Player) {
     games.remove(player)
   }
 
