@@ -35,7 +35,6 @@ trait ActorPlayers {
 
   /** let's manage one ActorPlayer instance for each player, even if she reconnects */
   def findActorPlayerCreatingIfNeeded(actor: ActorRef, playerName: String): ActorPlayer = {
-    // find or create actor player
     val optExisting = findActorPlayerByIP(actor)
     val actorPlayer = optExisting getOrElse {
       // we don't know this ip address, lets create a new player
@@ -44,6 +43,7 @@ trait ActorPlayers {
         actor,
         lastAction = DateTime.now,
         totalGames = 0)
+      // register new ActorPlayer
       actorPlayers += newActorPlayer
       newActorPlayer
     }
