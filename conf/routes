@@ -6,5 +6,7 @@
 GET     /                           com.clashcode.web.controllers.Application.index
 GET     /status                     com.clashcode.web.controllers.Application.status
 
+GET     /game-state                 com.clashcode.web.controllers.DebugController.dumpGameState
+
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)

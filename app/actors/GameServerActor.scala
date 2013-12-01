@@ -11,6 +11,7 @@ import clashcode.logic.Token
 import clashcode.wordguess.messages._
 import com.clashcode.web.controllers.Application
 import clashcode.logic.GameState
+import com.clashcode.web.controllers.DebugController
 
 /**
  *
@@ -120,6 +121,8 @@ class GameServerActor extends TickingActor
     Application.push(actorPlayers) // send updated player list to frontend
     Application.pushTokens(tokens) // send updated token list to frontend
 
+    DebugController.words = gameState.allWords
+    
     purgeTimedOutGames()
   }
 
