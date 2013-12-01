@@ -30,7 +30,9 @@ class GameServerActor extends TickingActor(intervalSecs = 5) with GameLogic with
     if (hasRemainingWords) {
       removeExistingActorPlayerNamed(playerName) // TODO: better remove on disconnect?
       val actorPlayer = findActorPlayerCreatingIfNeeded(sender, playerName)
-      sender ! newOrExistingGameFor(actorPlayer).status
+      val game = newOrExistingGameFor(actorPlayer)
+      sender ! GameStarted(gameId = gameHash(game))
+      sender ! game.status
     } else {
       sender ! NoAvailableGames()
     }
@@ -58,17 +60,23 @@ class GameServerActor extends TickingActor(intervalSecs = 5) with GameLogic with
         sender ! game.status
         broadCastProgress(others = allPlayerActorsExcept(sender),
           letter,
-          game.status.word)
+          game)
       }
     }) getOrElse {
       sender ! NotPlayingError()
     }
   }
 
-  private def broadCastProgress(others: Seq[ActorRef], letter: Char, word: Seq[Option[Char]]) {
+  private def broadCastProgress(others: Seq[ActorRef], letter: Char, game: Game) {
+    val word = game.status.word
+    val gameId = gameHash(game)
     others foreach { otherPlayerActor =>
-      otherPlayerActor ! SuccessfulGuess(letter, word)
+      otherPlayerActor ! SuccessfulGuess(gameId, letter, word)
     }
+  }
+
+  private def gameHash(game: Game): String = {
+    game.wordIdx.toString // TODO
   }
 
   override def onGameWon(player: Player, game: Game) {
