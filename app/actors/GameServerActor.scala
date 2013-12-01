@@ -31,7 +31,7 @@ class GameServerActor extends TickingActor(intervalSecs = 5) with GameLogic with
       removeExistingActorPlayerNamed(playerName) // TODO: better remove on disconnect?
       val actorPlayer = findActorPlayerCreatingIfNeeded(sender, playerName)
       val game = newOrExistingGameFor(actorPlayer)
-      sender ! GameStarted(gameId = gameHash(game))
+      sender ! PlayingGame(gameId = gameHash(game))
       sender ! game.status
     } else {
       sender ! NoAvailableGames()
