@@ -27,7 +27,7 @@ class GameServerActor extends TickingActor
   var tokens = Seq.empty[Token]
 
   def initializeGameState(): GameState = {
-    ensureGameStateFile(gameStateFilePath, "./source-text.txt")
+    ensureGameStateFile(gameStateFilePath, "./source-text.txt", minGameWordLength = 5)
     loadFromFile(gameStateFilePath)
   }
 
@@ -98,10 +98,10 @@ class GameServerActor extends TickingActor
     sendGameOverMessage(player, msg = GameWon(finalStatus = game.status))
     persistGameState()
   }
-  
+
   private def persistGameState() {
     writeToFile(gameState, gameStateFilePath)
-  } 
+  }
 
   override def onGameLost(player: Player, game: Game) {
     Logger.info(s"""Player "${player.name}" lost a game""")

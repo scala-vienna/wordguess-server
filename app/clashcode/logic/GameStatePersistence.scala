@@ -38,13 +38,13 @@ trait GameStatePersistence {
     }
   }
 
-  def ensureGameStateFile(gameStatePath: String, sourceTextPath: String) {
+  def ensureGameStateFile(gameStatePath: String, sourceTextPath: String, minGameWordLength:Int) {
     val gameStateFile = new File(gameStatePath)
     val sourceTextFile = new File(sourceTextPath)
     assert(sourceTextFile.exists(), "File not found: " + sourceTextFile.getAbsolutePath())
     if (!gameStateFile.exists()) {
       val src = Source.fromFile(sourceTextFile)
-      val gameState = GameStateGenerator.fromSource(src)
+      val gameState = GameStateGenerator.fromSource(src, minGameWordLength)
       writeToFile(gameState, gameStateFile)
     }
   }
