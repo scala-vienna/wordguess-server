@@ -1,18 +1,22 @@
 package actors
 
-import clashcode.wordguess.messages._
 import akka.actor.ActorRef
-import clashcode.logic.Game
-import clashcode.logic.GameLogic
-import clashcode.logic.Player
+
+import clashcode.wordguess.messages._
+import clashcode.logic._
 
 /**
  *
  */
 class GameServerActor extends TickingActor with GameLogic with ActorPlayers {
 
+  // TODO: Initially solve uninteresting tokens (punctuation, new-lines, etc.)
+  // TODO: Remove timed-out games?
+  // TODO: prevent player from spawning more than one game?
+  // TODO: use proper logging instead of println()
+  
+
   // TODO: read from file or something like that
-  // TODO: Initially solve uninteressant tokens (sequences of non-chars: blanks, etc.)
   override val words = Seq("hello", "world")
 
   def receive = {
@@ -44,11 +48,17 @@ class GameServerActor extends TickingActor with GameLogic with ActorPlayers {
       if (!game.isSolved)
     } yield {
       sender ! game.status
-      allPlayerActorsExcept(sender) foreach { otherPlayerActor =>
-        otherPlayerActor ! SuccessfulGuess(letter, word = game.status.word)
-      }
+      broadCastProgress(others = allPlayerActorsExcept(sender),
+        letter,
+        game.status.word)
     }) getOrElse {
       sender ! NotPlayingError()
+    }
+  }
+
+  private def broadCastProgress(others: Seq[ActorRef], letter: Char, word: Seq[Option[Char]]) {
+    others foreach { otherPlayerActor =>
+      otherPlayerActor ! SuccessfulGuess(letter, word)
     }
   }
 
