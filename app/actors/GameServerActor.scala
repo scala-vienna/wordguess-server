@@ -35,6 +35,7 @@ class GameServerActor extends TickingActor(intervalSecs = 5) with GameLogic with
       val newOrExistingGame = getGame(player) getOrElse {
         createGame(player)
       }
+      sender ! PlayingGame(gameId = gameHash(newOrExistingGame))
       sender ! newOrExistingGame.status
     } else {
       sender ! NoAvailableGames()
@@ -103,7 +104,7 @@ class GameServerActor extends TickingActor(intervalSecs = 5) with GameLogic with
 
     // send updated player list to frontend
     Application.push(actorPlayers)
-    
+
     purgeTimedOutGames()
   }
 
