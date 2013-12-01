@@ -47,8 +47,8 @@ class GameServerActor extends TickingActor(intervalSecs = 5) with GameLogic with
     (for {
       actorPlayer <- findActorPlayer(actor = sender)
       player = actorPlayer.player
-      _ = makeGuess(player, letter)
       game <- getGame(player)
+      _ = makeGuess(player, letter)
     } yield {
       if (!game.isSolved) {
         Logger.info(s"""Player "${player.name}" guessed '$letter'""")
