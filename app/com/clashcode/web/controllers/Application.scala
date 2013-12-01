@@ -8,12 +8,19 @@ import play.api.Logger
 import play.api.libs.json.{Json, JsValue}
 import akka.actor.ActorRef
 import actors.ActorPlayer
+import clashcode.logic.{NonWord, Token}
 
 object Application extends Controller {
 
   private val (out, channel) = Concurrent.broadcast[JsValue]
 
   var maybeHostingActor = Option.empty[ActorRef]
+
+  def pushTokens(tokens: Seq[Token]) = channel.push(
+    Json.obj(
+      "tokens" -> Json.toJson(tokens.map(t => t.str)),
+      "nonWords" -> Json.toJson(tokens.zipWithIndex.filter(_._1.isInstanceOf[NonWord]).map(_._2))
+    ))
 
   def push(players: Seq[ActorPlayer]) = channel.push(
     Json.obj("players" ->

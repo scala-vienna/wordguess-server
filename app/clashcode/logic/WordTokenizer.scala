@@ -2,13 +2,14 @@ package clashcode.logic
 
 import scala.util.parsing.combinator._
 
-class Token(str: String) {
+abstract class Token {
+  def str : String
   val length = str.length()
   val stringValue = str
 }
 
-case class Word(str: String) extends Token(str)
-case class NonWord(str: String) extends Token(str)
+case class Word(str: String) extends Token
+case class NonWord(str: String) extends Token
 
 object WordTokenizer extends RegexParsers {
   override val skipWhitespace = false
