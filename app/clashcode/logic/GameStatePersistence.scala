@@ -27,7 +27,6 @@ trait GameStatePersistence {
     for (wordState <- state.wordStates) {
       val stateLetter = if (wordState.solved) "S" else "U"
       val escapedWord = StringEscapeUtils.escapeJava(wordState.word)
-      println(s"writing word: $escapedWord")
       writer.write(s"$stateLetter:$escapedWord\n")
     }
   }
