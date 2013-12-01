@@ -5,10 +5,14 @@ import clashcode.logic.Player
 import akka.actor.ActorRef
 import org.joda.time.{ Seconds, DateTime }
 
-case class ActorPlayer(player: Player, actor: ActorRef, lastAction: DateTime) {
-  def isLastActionOlderThan(seconds: Int): Boolean = {
+case class ActorPlayer(player: Player, actor: ActorRef, var lastAction: DateTime= DateTime.now()) {
+  def isLastActionOlderThan(maxSeconds: Int): Boolean = {
     val now = DateTime.now()
-    Seconds.secondsBetween(now, lastAction).getSeconds() > seconds
+    val secondsElapsed = Seconds.secondsBetween(lastAction, now).getSeconds()
+    secondsElapsed > maxSeconds
+  }
+  def updateLastAction() {
+    lastAction = DateTime.now()
   }
 }
 
@@ -24,8 +28,7 @@ trait ActorPlayers {
   def findActorPlayerCreatingIfNeeded(actor: ActorRef, playerName: String): ActorPlayer = {
     val optExisting = findActorPlayer(actor)
     optExisting getOrElse {
-      val now = DateTime.now()
-      val newActorPlayer = ActorPlayer(Player(playerName), actor, lastAction = now)
+      val newActorPlayer = ActorPlayer(Player(playerName), actor)
       actorPlayers += newActorPlayer
       newActorPlayer
     }
@@ -47,8 +50,8 @@ trait ActorPlayers {
     actorPlayers.map(_.actor) - actorToExclude
   }
 
-  def findWhereLastActionOlderThan(seconds: Int): Seq[ActorPlayer] = {
-    actorPlayers.filter(_.isLastActionOlderThan(seconds))
+  def actorPlayersOlderThan(maxSeconds: Int): Seq[ActorPlayer] = {
+    actorPlayers.filter(_.isLastActionOlderThan(maxSeconds))
   }
 
 }
