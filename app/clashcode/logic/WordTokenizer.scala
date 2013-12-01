@@ -4,6 +4,7 @@ import scala.util.parsing.combinator._
 
 class Token(str: String) {
   val length = str.length()
+  val stringValue = str
 }
 
 case class Word(str: String) extends Token(str)
