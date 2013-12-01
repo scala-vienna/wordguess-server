@@ -126,8 +126,10 @@ class GameServerActor extends TickingActor
   private def purgeTimedOutGames() {
     actorPlayersOlderThan(timeOutSeconds) foreach { actorPlayer =>
       val player = actorPlayer.player
-      removeGameOf(player)
-      Logger.info("Removed timed-out game of: " + player.name)
+      if (getGame(player).isDefined) {
+        removeGameOf(player)
+        Logger.info("Removed timed-out game of: " + player.name)
+      }
     }
   }
 
