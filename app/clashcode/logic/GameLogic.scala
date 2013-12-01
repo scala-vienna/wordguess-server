@@ -24,7 +24,6 @@ trait GameLogic {
 
   def createGame(player: Player): Game = {
     val wordIdx = randomAvailableWordIndex
-    println("Creating a game with wordIdx: " +  wordIdx)
     def unsolvedWord(idx: Int) = words(wordIdx).map { ignoredChar => None }
     val gameStatus = GameStatus(word = unsolvedWord(idx = wordIdx), remainingTries = triesPerGame)
     val game = Game(wordIdx, status = gameStatus)
@@ -84,9 +83,7 @@ trait GameLogic {
   }
 
   private def randomAvailableWordIndex: Int = {
-    println("Available word indexes: " + availableWordIndexes)
     val randomIndexes = Random.shuffle(availableWordIndexes)
-    println("Random word indexes: " + randomIndexes)
     randomIndexes.head
   }
 
