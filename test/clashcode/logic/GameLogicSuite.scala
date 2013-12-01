@@ -9,9 +9,14 @@ class GameLogicSuite extends FunSuite with BeforeAndAfter {
 
   var logic: GameLogic = _
 
+  def makeGameState(words: String*) = {
+    val wordStates = words.map { WordState(_, solved = false) }
+    new GameState(wordStates.toList)
+  }
+
   before {
     logic = new GameLogic() {
-      val words = Seq("hello", "world")
+      val gameState = makeGameState("hello","world")
       def onGameWon(player: Player, game: Game) {}
       def onGameLost(player: Player, game: Game) {}
     }
@@ -75,7 +80,7 @@ class GameLogicSuite extends FunSuite with BeforeAndAfter {
   test("winning a game should result in callback") {
     val player = Player("testPlayer")
     val logic = new GameLogic() {
-      val words = Seq("hello")
+      val gameState = makeGameState("hello")
       var wasCalled = false
       def onGameWon(player: Player, game: Game) {
         wasCalled = true
@@ -93,7 +98,7 @@ class GameLogicSuite extends FunSuite with BeforeAndAfter {
   test("loosing a game should result in callback") {
     val player = Player("testPlayer")
     val logic = new GameLogic() {
-      val words = Seq("abc")
+      val gameState = makeGameState("abc")
       var wasCalled = false
       def onGameWon(player: Player, game: Game) {}
       def onGameLost(player: Player, game: Game) {
@@ -108,7 +113,7 @@ class GameLogicSuite extends FunSuite with BeforeAndAfter {
   test("be case insensitive") {
     val player = Player("testPlayer")
     val logic = new GameLogic() {
-      val words = Seq("hello")
+      val gameState = makeGameState("hello")
       var wasCalled = false
       def onGameWon(player: Player, game: Game) {
         wasCalled = true
@@ -123,7 +128,7 @@ class GameLogicSuite extends FunSuite with BeforeAndAfter {
   trait HelloGameLogicTest {
     val player = Player("testPlayer")
     val logic = new GameLogic() {
-      val words = Seq("hello")
+      val gameState = makeGameState("hello")
       def onGameWon(player: Player, game: Game) {}
       def onGameLost(player: Player, game: Game) {}
     }
@@ -158,7 +163,7 @@ class GameLogicSuite extends FunSuite with BeforeAndAfter {
       assert(logic.hasRemainingWords === false)
     }
   }
-  
+
   test("removing game of player") {
     val game = logic.createGame(player)
     assert(logic.getGame(player) === Some(game), "Player should have game")

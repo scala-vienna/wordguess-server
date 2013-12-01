@@ -13,9 +13,10 @@ trait GameLogic {
 
   val triesPerGame = 5
 
-  def words: Seq[String]
-
-  val solvedWordIndexes = mutable.Buffer[Int]()
+  def gameState:GameState
+  
+  final def words: Seq[String] = gameState.allWords
+  final def solvedWordIndexes = gameState.solvedWordIndexes
 
   val games = mutable.Map[Player, Game]()
 
@@ -71,7 +72,7 @@ trait GameLogic {
   }
 
   private def addSolvedWordIndex(game: Game) {
-    solvedWordIndexes += game.wordIdx
+    gameState.markWordAsSolved(game.wordIdx)
   }
 
   private def availableWordIndexes: Set[Int] = {
