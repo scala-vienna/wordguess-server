@@ -1,6 +1,7 @@
 package clashcode.logic
 
 import scala.collection.mutable
+import scala.io.Source
 
 object GameStateGenerator {
 
@@ -19,6 +20,11 @@ object GameStateGenerator {
       }
     }
     GameState(wordStates.toList)
+  }
+
+  def fromSource(src: Source, minGameWordLength: Int = 4): GameState = {
+    val wholeStr = src.getLines.mkString("\n")
+    fromText(wholeStr, minGameWordLength)
   }
 
 }
