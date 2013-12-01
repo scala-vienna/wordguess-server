@@ -38,9 +38,10 @@ trait GameLogic {
   def makeGuess(player: Player, letter: Char) {
     getGame(player) map { game =>
       val wordToBeGuessed = words(game.wordIdx)
-      if (wordToBeGuessed.contains(letter)) {
+      val wordContainsLetter = wordToBeGuessed.toLowerCase().contains(letter.toLower)
+      if (wordContainsLetter) {
         val updatedStatusWord = for ((c, idx) <- wordToBeGuessed.zipWithIndex) yield {
-          if (c == letter)
+          if (c.toLower == letter.toLower)
             Some(c)
           else
             game.status.word(idx)

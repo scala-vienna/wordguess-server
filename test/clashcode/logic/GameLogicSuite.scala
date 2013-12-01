@@ -105,6 +105,21 @@ class GameLogicSuite extends FunSuite with BeforeAndAfter {
     assert(logic.wasCalled, "Should have been called upon loosing the game")
   }
 
+  test("be case insensitive") {
+    val player = Player("testPlayer")
+    val logic = new GameLogic() {
+      val words = Seq("hello")
+      var wasCalled = false
+      def onGameWon(player: Player, game: Game) {
+        wasCalled = true
+      }
+      def onGameLost(player: Player, game: Game) {}
+    }
+    val game = logic.createGame(player)
+    ("hElO").foreach(c => logic.makeGuess(player, c))
+    assert(logic.wasCalled, "The game should have been won")
+  }
+
   trait HelloGameLogicTest {
     val player = Player("testPlayer")
     val logic = new GameLogic() {
@@ -113,30 +128,30 @@ class GameLogicSuite extends FunSuite with BeforeAndAfter {
       def onGameLost(player: Player, game: Game) {}
     }
     val game = logic.createGame(player)
-    def guessLetters(letters:String) = letters.foreach(c => logic.makeGuess(player, c))
+    def guessLetters(letters: String) = letters.foreach(c => logic.makeGuess(player, c))
   }
-  
+
   test("a guessed word should added to the solved words") {
     new HelloGameLogicTest {
       guessLetters("helo")
       assert(logic.solvedWordIndexes === Seq(0))
     }
   }
-  
+
   test("when the game is won, it's removed from the list of games") {
     new HelloGameLogicTest {
       guessLetters("helo")
       assert(logic.getGame(player) === None, "Game should not be found anymore")
     }
-  }  
+  }
 
   test("when the game is lost, it's removed from the list of games") {
     new HelloGameLogicTest {
       guessLetters("xqpkn")
       assert(logic.getGame(player) === None, "Game should not be found anymore")
     }
-  }    
-  
+  }
+
   test("when the last word has been guessed, there are no more words remaining") {
     new HelloGameLogicTest {
       guessLetters("helo")
