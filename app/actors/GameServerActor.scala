@@ -19,18 +19,16 @@ class GameServerActor extends TickingActor
   with GameLogic with GameStatePersistence with ActorPlayers {
 
   val timeOutSeconds = 5 * 60
+  val gameStateFilePath = "./game-state.txt"
 
   override val gameState = initializeGameState()
-
-  // TODO: Initially solve uninteresting tokens (punctuation, new-lines, etc.)
-  // TODO: prevent player from spawning more than one game?  
 
   // partially solved text represented as tokens (for frontend)
   var tokens = Seq.empty[Token]
 
   def initializeGameState(): GameState = {
-    ensureGameStateFile("./game-state.txt", "./source-text.txt")
-    loadFromFile("./game-state.txt")
+    ensureGameStateFile(gameStateFilePath, "./source-text.txt")
+    loadFromFile(gameStateFilePath)
   }
 
   def receive = {
@@ -98,7 +96,12 @@ class GameServerActor extends TickingActor
   override def onGameWon(player: Player, game: Game) {
     Logger.info(s"""Player "${player.name}" won a game""")
     sendGameOverMessage(player, msg = GameWon(finalStatus = game.status))
+    persistGameState()
   }
+  
+  private def persistGameState() {
+    writeToFile(gameState, gameStateFilePath)
+  } 
 
   override def onGameLost(player: Player, game: Game) {
     Logger.info(s"""Player "${player.name}" lost a game""")
