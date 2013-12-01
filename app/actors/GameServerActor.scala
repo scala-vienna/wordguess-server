@@ -12,6 +12,7 @@ import clashcode.logic.Player
 class GameServerActor extends TickingActor with GameLogic with ActorPlayers {
 
   // TODO: read from file or something like that
+  // TODO: Initially solve uninteressant tokens (sequences of non-chars: blanks, etc.)
   override val words = Seq("hello", "world")
 
   def receive = {
