@@ -48,15 +48,25 @@ trait ActorPlayers {
       newActorPlayer
     }
 
-    // check if player name is already taken, else append players ip address for uniqueness
-    val nameExists = actorPlayers.find(p => p != actorPlayer && p.player.name == playerName).isDefined
-    val uniquePlayerName = if (nameExists) playerName + "-" + actorPlayer.ipAddress else playerName
+    val uniquePlayerName = {
+      val otherActorWithSameName = findDifferentPlayerAlreadyNamed(actorPlayer, playerName)
+      if (otherActorWithSameName.isDefined)
+        // name exists, add IP for uniqueness
+        playerName + "-" + actorPlayer.ipAddress
+      else
+        // otherwise use name as-is (it's good enough)
+        playerName
+    }
 
     // update our records about this player
     actorPlayer.player = Player(uniquePlayerName) // player may have changed her name
     actorPlayer.lastAction = DateTime.now
     actorPlayer.actor = actor // maybe it's a new actor
     actorPlayer
+  }
+
+  private def findDifferentPlayerAlreadyNamed(playerToCompare: ActorPlayer, playerName: String) = {
+    actorPlayers.find(p => p != playerToCompare && p.player.name == playerName)
   }
 
   def findActorPlayer(playerName: String): Option[ActorPlayer] = {
