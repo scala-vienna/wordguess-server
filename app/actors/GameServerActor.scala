@@ -2,27 +2,36 @@ package actors
 
 import play.api.Logger
 import akka.actor.ActorRef
-
+import akka.actor.actorRef2Scala
+import clashcode.logic.Game
+import clashcode.logic.GameLogic
+import clashcode.logic.GameStatePersistence
+import clashcode.logic.Player
+import clashcode.logic.Token
 import clashcode.wordguess.messages._
-import clashcode.logic._
 import com.clashcode.web.controllers.Application
+import clashcode.logic.GameState
 
 /**
  *
  */
-class GameServerActor extends TickingActor(intervalSecs = 5) with GameLogic with ActorPlayers {
+class GameServerActor extends TickingActor
+  with GameLogic with GameStatePersistence with ActorPlayers {
 
   val timeOutSeconds = 5 * 60
 
-  // TODO: read from file or something like that
-  // TODO: make global progress persistent
-  override val words = Seq("hello", "world")
+  override val gameState = initializeGameState()
 
   // TODO: Initially solve uninteresting tokens (punctuation, new-lines, etc.)
   // TODO: prevent player from spawning more than one game?  
 
   // partially solved text represented as tokens (for frontend)
   var tokens = Seq.empty[Token]
+
+  def initializeGameState(): GameState = {
+    ensureGameStateFile("./game-state.txt", "./source-text.txt")
+    loadFromFile("./game-state.txt")
+  }
 
   def receive = {
     case RequestGame(playerName) => handleGameRequest(playerName, sender)
