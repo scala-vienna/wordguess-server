@@ -53,7 +53,7 @@ class GameServerActor extends TickingActor(intervalSecs = 5) with GameLogic with
 
   def handleGuess(sender: ActorRef, letter: Char) {
     (for {
-      actorPlayer <- findActorPlayer(actor = sender)
+      actorPlayer <- findActorPlayerByIP(actor = sender)
       player = actorPlayer.player
       game <- getGame(player)
     } yield {
