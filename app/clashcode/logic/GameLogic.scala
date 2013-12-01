@@ -7,14 +7,17 @@ import scala.util.Random
 case class Player(name: String)
 case class Game(wordIdx: Int, var status: GameStatus) {
   def isSolved = status.word.forall(_.isDefined)
+  def displayWord = status.word.map(c => c.getOrElse('_')).mkString
 }
+
+case class GameWord(idx: Int, word: String, playing: Boolean, solved: Boolean)
 
 trait GameLogic {
 
   val triesPerGame = 5
 
-  def gameState:GameState
-  
+  def gameState: GameState
+
   final def words: Seq[String] = gameState.allWords
   final def solvedWordIndexes = gameState.solvedWordIndexes
 
@@ -35,6 +38,23 @@ trait GameLogic {
 
   def onGameWon(player: Player, game: Game)
   def onGameLost(player: Player, game: Game)
+
+  def gameWords: Seq[GameWord] = {
+    val solvedIdxList = gameState.solvedWordIndexes
+    for ((wordState, idx) <- gameState.wordStates.zipWithIndex) yield {
+        val solvedWord = gameState.allWords(idx)
+      val solved = solvedIdxList.contains(idx)
+      if (solved) {
+        GameWord(idx, solvedWord, playing = false, solved = true)
+      } else {
+        val optGame = games.values.find(game => game.wordIdx == idx)
+        val playing = optGame.isDefined
+        val hiddenWord = solvedWord.map(_ => '_')
+        val word = optGame map (game => game.displayWord) getOrElse (hiddenWord)
+        GameWord(idx, word, playing, solved = false)
+      }
+    }
+  }
 
   def makeGuess(player: Player, letter: Char) {
     getGame(player) map { game =>
@@ -66,8 +86,8 @@ trait GameLogic {
       onGameLost(player, game)
     }
   }
-  
-  def removeGameOf(player:Player) {
+
+  def removeGameOf(player: Player) {
     games.remove(player)
   }
 
@@ -75,8 +95,9 @@ trait GameLogic {
     gameState.markWordAsSolved(game.wordIdx)
   }
 
+  private def inGameWordIndexes = games.values.map(_.wordIdx)
+
   private def availableWordIndexes: List[Int] = {
-    val inGameWordIndexes = games.values.map(_.wordIdx)
     val unavailableWordIndexes: Set[Int] =
       (inGameWordIndexes ++ solvedWordIndexes).toSet
     ((0 until words.length).toSet -- unavailableWordIndexes).toList

@@ -16,7 +16,7 @@ class GameLogicSuite extends FunSuite with BeforeAndAfter {
 
   before {
     logic = new GameLogic() {
-      val gameState = makeGameState("hello","world")
+      val gameState = makeGameState("hello", "world")
       def onGameWon(player: Player, game: Game) {}
       def onGameLost(player: Player, game: Game) {}
     }
@@ -169,6 +169,21 @@ class GameLogicSuite extends FunSuite with BeforeAndAfter {
     assert(logic.getGame(player) === Some(game), "Player should have game")
     logic.removeGameOf(player)
     assert(logic.getGame(player) === None, "Player should NOT have game anymore")
+  }
+
+  test("see game words while playing") {
+    new HelloGameLogicTest {
+      guessLetters("el")
+      val gameWords = logic.gameWords
+      assert(gameWords === Seq(GameWord(0, "_ell_", playing = true, solved = false)))
+    }
+  }
+
+  test("see game words before playing") {
+    val gameWords = logic.gameWords
+    assert(gameWords === Seq(
+      GameWord(0, "_____", playing = false, solved = false),
+      GameWord(1, "_____", playing = false, solved = false)))
   }
 
 }
