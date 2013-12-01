@@ -5,33 +5,53 @@ import clashcode.logic.Player
 import akka.actor.ActorRef
 import org.joda.time.{ Seconds, DateTime }
 
-case class ActorPlayer(player: Player, actor: ActorRef, var lastAction: DateTime= DateTime.now()) {
+/** statistics about each player are collected here
+  * players are identified by ip address
+  * players may change their names
+  * */
+class ActorPlayer(var player: Player,
+                  var actor: ActorRef,
+                  var lastAction: DateTime = DateTime.now, // last message received from player
+                  var totalGames: Int) // # total played games
+{
+  val ipAddress = ActorPlayers.getIpAddress(actor)
+
   def isLastActionOlderThan(maxSeconds: Int): Boolean = {
     val now = DateTime.now()
     val secondsElapsed = Seconds.secondsBetween(lastAction, now).getSeconds()
     secondsElapsed > maxSeconds
   }
+
   def updateLastAction() {
     lastAction = DateTime.now()
   }
+
 }
 
 trait ActorPlayers {
+
   val actorPlayers = mutable.Buffer[ActorPlayer]()
 
-  def removeExistingActorPlayerNamed(playerName: String) {
-    findActorPlayer(playerName) map { actorPlayer =>
-      actorPlayers -= actorPlayer
-    }
-  }
-
+  /** let's manage one ActorPlayer instance for each player, even if she reconnects */
   def findActorPlayerCreatingIfNeeded(actor: ActorRef, playerName: String): ActorPlayer = {
-    val optExisting = findActorPlayer(actor)
-    optExisting getOrElse {
-      val newActorPlayer = ActorPlayer(Player(playerName), actor)
+    // find or create actor player
+    val optExisting = findActorPlayer(actor) // find player by ip address
+    val actorPlayer = optExisting getOrElse {
+      // we don't know this ip address, lets create a new player
+      val newActorPlayer = new ActorPlayer(Player(playerName), actor, DateTime.now, 0)
       actorPlayers += newActorPlayer
       newActorPlayer
     }
+
+    // check if player name is already taken, else append players ip address for uniqueness
+    val nameExists = actorPlayers.find(p => p != actorPlayer && p.player.name == playerName).isDefined
+    val uniquePlayerName = if (nameExists) playerName + "-" + actorPlayer.ipAddress else playerName
+
+    // update our records about this player
+    actorPlayer.player = Player(uniquePlayerName) // player may have changed her name
+    actorPlayer.lastAction = DateTime.now
+    actorPlayer.actor = actor // maybe it's a new actor
+    actorPlayer
   }
 
   def findActorPlayer(playerName: String): Option[ActorPlayer] = {
@@ -42,8 +62,9 @@ trait ActorPlayers {
     actorPlayers.find(actorPlayer => actorPlayer.player == player)
   }
 
+  /** find actor player by actors ip address */
   def findActorPlayer(actor: ActorRef): Option[ActorPlayer] = {
-    actorPlayers.find(actorPlayer => actorPlayer.actor == actor)
+    actorPlayers.find(actorPlayer => actorPlayer.ipAddress == ActorPlayers.getIpAddress(actor))
   }
 
   def allPlayerActorsExcept(actorToExclude: ActorRef): Seq[ActorRef] = {
@@ -54,4 +75,10 @@ trait ActorPlayers {
     actorPlayers.filter(_.isLastActionOlderThan(maxSeconds))
   }
 
+}
+
+object ActorPlayers {
+  def getIpAddress(actor: ActorRef) : String = {
+    actor.path.address.host.getOrElse("127.0.0.1")
+  }
 }
