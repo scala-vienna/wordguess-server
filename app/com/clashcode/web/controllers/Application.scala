@@ -15,14 +15,6 @@ object Application extends Controller {
 
   var maybeHostingActor = Option.empty[ActorRef]
 
-//  def push(game: Game) = channel.push(
-//    Json.obj("game" ->
-//      Json.toJson(game.turns.map(t =>
-//        Json.obj(
-//          "name" -> t.player.name,
-//          "cooperate" -> t.cooperate,
-//          "points" -> t.points)))))
-
   def push(players: Seq[ActorPlayer]) = channel.push(
     Json.obj("players" ->
       Json.toJson(players.map(p =>
@@ -30,7 +22,6 @@ object Application extends Controller {
           "name" -> p.player.name,
           "lastAction" -> p.lastAction,
           "games" -> p.totalGames)))))
-
 
   def push(message: String) = channel.push(Json.obj("status" -> message))
 
