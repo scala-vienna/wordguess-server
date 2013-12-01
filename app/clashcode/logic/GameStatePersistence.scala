@@ -32,7 +32,9 @@ trait GameStatePersistence {
     }
   }
 
-  def ensureGameStateFile(gameStateFile:File, sourceTextFile:File) {
+  def ensureGameStateFile(gameStatePath:String, sourceTextPath:String) {
+    val gameStateFile = new File(gameStatePath)
+    val sourceTextFile = new File(sourceTextPath)
     if(!gameStateFile.exists()) {
       val src = Source.fromFile(sourceTextFile)
       val gameState = GameStateGenerator.fromSource(src)
