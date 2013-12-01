@@ -21,6 +21,9 @@ class GameServerActor extends TickingActor(intervalSecs = 5) with GameLogic with
   // TODO: Initially solve uninteresting tokens (punctuation, new-lines, etc.)
   // TODO: prevent player from spawning more than one game?  
 
+  // partially solved text represented as tokens (for frontend)
+  var tokens = Seq.empty[Token]
+
   def receive = {
     case RequestGame(playerName) => handleGameRequest(playerName, sender)
     case MakeGuess(letter) => handleGuess(sender, letter)
@@ -102,8 +105,8 @@ class GameServerActor extends TickingActor(intervalSecs = 5) with GameLogic with
 
   def handleTick() {
 
-    // send updated player list to frontend
-    Application.push(actorPlayers)
+    Application.push(actorPlayers) // send updated player list to frontend
+    Application.pushTokens(tokens) // send updated token list to frontend
 
     purgeTimedOutGames()
   }
