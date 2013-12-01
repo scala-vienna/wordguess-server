@@ -11,12 +11,12 @@ import clashcode.logic._
  */
 class GameServerActor extends TickingActor(intervalSecs = 5) with GameLogic with ActorPlayers {
 
-  val timeOutSeconds = 5*60
+  val timeOutSeconds = 5 * 60
 
   // TODO: read from file or something like that
   // TODO: make global progress persistent
   override val words = Seq("hello", "world")
-  
+
   // TODO: Initially solve uninteresting tokens (punctuation, new-lines, etc.)
   // TODO: prevent player from spawning more than one game?  
 
@@ -27,19 +27,21 @@ class GameServerActor extends TickingActor(intervalSecs = 5) with GameLogic with
   }
 
   def handleGameRequest(playerName: String, sender: ActorRef) {
-    Logger.info("Game request for player: " + playerName)
     if (hasRemainingWords) {
-      removeExistingActorPlayerNamed(playerName)
+      removeExistingActorPlayerNamed(playerName) // TODO: better remove on disconnect?
       val actorPlayer = findActorPlayerCreatingIfNeeded(sender, playerName)
-      val player = actorPlayer.player
-      val newOrExistingGame = getGame(player) getOrElse {
-        val newGame = createGame(player)
-        Logger.info("Created game for player: " + playerName)
-        newGame
-      }
-      sender ! newOrExistingGame.status
+      sender ! newOrExistingGameFor(actorPlayer).status
     } else {
       sender ! NoAvailableGames()
+    }
+  }
+
+  private def newOrExistingGameFor(actorPlayer: ActorPlayer): Game = {
+    val player = actorPlayer.player
+    getGame(player) getOrElse {
+      val newGame = createGame(player)
+      Logger.info("Created game for player: " + player.name)
+      newGame
     }
   }
 
@@ -48,8 +50,8 @@ class GameServerActor extends TickingActor(intervalSecs = 5) with GameLogic with
       actorPlayer <- findActorPlayer(actor = sender)
       player = actorPlayer.player
       game <- getGame(player)
-      _ = makeGuess(player, letter)
     } yield {
+      makeGuess(player, letter)
       if (!game.isSolved) {
         Logger.info(s"""Player "${player.name}" guessed '$letter'""")
         actorPlayer.updateLastAction
