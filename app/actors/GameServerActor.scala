@@ -76,7 +76,7 @@ class GameServerActor extends TickingActor(intervalSecs = 5) with GameLogic with
   }
 
   private def gameHash(game: Game): String = {
-    game.wordIdx.toString // TODO
+    s"g.${game.wordIdx}".hashCode().toHexString
   }
 
   override def onGameWon(player: Player, game: Game) {
