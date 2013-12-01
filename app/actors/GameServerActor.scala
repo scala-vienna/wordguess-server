@@ -58,7 +58,7 @@ class GameServerActor extends TickingActor(intervalSecs = 5) with GameLogic with
         Logger.info(s"""Player "${player.name}" guessed '$letter'""")
         actorPlayer.updateLastAction
         sender ! game.status
-        broadCastProgress(others = allPlayerActorsExcept(sender),
+        broadCastProgress(recipients = allPlayerActorsExcept(sender),
           letter,
           game)
       }
@@ -67,11 +67,11 @@ class GameServerActor extends TickingActor(intervalSecs = 5) with GameLogic with
     }
   }
 
-  private def broadCastProgress(others: Seq[ActorRef], letter: Char, game: Game) {
-    val word = game.status.word
+  private def broadCastProgress(recipients: Seq[ActorRef], letter: Char, game: Game) {
     val gameId = gameHash(game)
-    others foreach { otherPlayerActor =>
-      otherPlayerActor ! SuccessfulGuess(gameId, letter, word)
+    val word = game.status.word
+    recipients foreach { actor =>
+      actor ! SuccessfulGuess(gameId, letter, word)
     }
   }
 
