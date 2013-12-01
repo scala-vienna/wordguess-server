@@ -9,10 +9,10 @@ class GameStatePersistenceSuite extends FunSuite {
   test("load game state") {
     new GameStatePersistence {
       val src = Source.fromString("""
-          |U:This
-          |S:is
-          |S:a
-          |U:text""".stripMargin)
+          |U§This
+          |S§is
+          |S§a
+          |U§text""".stripMargin)
       val gameState = loadFrom(src)
       assert(gameState === GameState(List(
         WordState("This", false),
@@ -24,7 +24,7 @@ class GameStatePersistenceSuite extends FunSuite {
 
   test("handle escaped values when loading") {
     new GameStatePersistence {
-      val src = Source.fromString(raw"S:\n\t")
+      val src = Source.fromString(raw"S§\n\t")
       val gameState = loadFrom(src)
       assert(gameState === GameState(List(
         WordState("\n\t", true))))
@@ -41,11 +41,11 @@ class GameStatePersistenceSuite extends FunSuite {
         WordState("text", false)))
       val writer = new StringWriter()
       write(state, writer)
-      assert(writer.toString() === """U:This
-          |S:is
-          |S:\n
-          |S:a
-          |U:text
+      assert(writer.toString() === """U§This
+          |S§is
+          |S§\n
+          |S§a
+          |U§text
           |""".stripMargin)
     }
   }
