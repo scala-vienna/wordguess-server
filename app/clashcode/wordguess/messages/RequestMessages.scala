@@ -5,3 +5,5 @@ package clashcode.wordguess.messages
 
 case class RequestGame(playerName: String) // the name is descriptive, it is not an unique-id
 case class MakeGuess(letter: Char)
+
+case class SendToAll(msg: String)

@@ -17,7 +17,7 @@ trait GameParameters {
   // TODO: read all this from Play's config
   def timeOutSeconds = 5 * 60
   def gameStateFilePath = "./game-state.txt"
-  def minGameWordLength = 5    
+  def minGameWordLength = 5
 }
 
 /**
@@ -25,7 +25,6 @@ trait GameParameters {
  */
 class GameServerActor extends TickingActor
   with GameLogic with GameStatePersistence with ActorPlayers with GameParameters {
-
 
   override val gameState = initializeGameState()
 
@@ -40,6 +39,7 @@ class GameServerActor extends TickingActor
   def receive = {
     case RequestGame(playerName) => handleGameRequest(playerName, sender)
     case MakeGuess(letter) => handleGuess(sender, letter)
+    case SendToAll(msg) => broadCastToAll(msg)
     case ActorTick() => handleTick()
   }
 
@@ -51,7 +51,6 @@ class GameServerActor extends TickingActor
       val newOrExistingGame = getGame(player) getOrElse {
         createGame(player)
       }
-      sender ! PlayingGame(gameId = gameHash(newOrExistingGame))
       sender ! newOrExistingGame.status
     } else {
       sender ! NoAvailableGames()
@@ -78,20 +77,15 @@ class GameServerActor extends TickingActor
         Logger.info(s"""Player "${player.name}" guessed '$letter'""")
         actorPlayer.updateLastAction
         sender ! game.status
-        broadCastProgress(recipients = allPlayerActorsExcept(sender),
-          letter,
-          game)
       }
     }) getOrElse {
       sender ! NotPlayingError()
     }
   }
 
-  private def broadCastProgress(recipients: Seq[ActorRef], letter: Char, game: Game) {
-    val gameId = gameHash(game)
-    val word = game.status.word
-    recipients foreach { actor =>
-      actor ! SuccessfulGuess(gameId, letter, word)
+  def broadCastToAll(msg: String) {
+    allPlayerActors foreach { actor =>
+      actor ! MsgToAll(msg)
     }
   }
 
@@ -127,7 +121,7 @@ class GameServerActor extends TickingActor
     Application.pushTokens(tokens) // send updated token list to frontend
 
     DebugController.pushWords(gameWords)
-    
+
     purgeTimedOutGames()
   }
 

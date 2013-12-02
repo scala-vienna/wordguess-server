@@ -83,7 +83,11 @@ trait ActorPlayers {
   }
 
   def allPlayerActorsExcept(actorToExclude: ActorRef): Seq[ActorRef] = {
-    actorPlayers.map(_.actor) - actorToExclude
+    (allPlayerActors) diff List(actorToExclude)
+  }
+
+  def allPlayerActors: Seq[ActorRef] = {
+    actorPlayers.map(_.actor)
   }
 
   def actorPlayersOlderThan(maxSeconds: Int): Seq[ActorPlayer] = {

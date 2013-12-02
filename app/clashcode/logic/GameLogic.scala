@@ -6,8 +6,8 @@ import scala.util.Random
 
 case class Player(name: String)
 case class Game(wordIdx: Int, var status: GameStatus) {
-  def isSolved = status.word.forall(_.isDefined)
-  def displayWord = status.word.map(c => c.getOrElse('_')).mkString
+  def isSolved = status.letters.forall(_.isDefined)
+  def displayWord = status.letters.map(c => c.getOrElse('_')).mkString
 }
 
 case class GameWord(idx: Int, str: String, playing: Boolean, solved: Boolean) {
@@ -30,7 +30,7 @@ trait GameLogic {
   def createGame(player: Player): Game = {
     val wordIdx = randomAvailableWordIndex
     def unsolvedWord(idx: Int) = words(wordIdx).map { ignoredChar => None }
-    val gameStatus = GameStatus(word = unsolvedWord(idx = wordIdx), remainingTries = triesPerGame)
+    val gameStatus = GameStatus(letters = unsolvedWord(idx = wordIdx), remainingTries = triesPerGame)
     val game = Game(wordIdx, status = gameStatus)
     games += player -> game
     game
@@ -67,9 +67,9 @@ trait GameLogic {
           if (c.toLower == letter.toLower)
             Some(c)
           else
-            game.status.word(idx)
+            game.status.letters(idx)
         }
-        game.status = game.status.copy(word = updatedStatusWord)
+        game.status = game.status.copy(letters = updatedStatusWord)
       } else {
         val decreasedTries = game.status.remainingTries - 1
         game.status = game.status.copy(remainingTries = decreasedTries)
@@ -79,7 +79,7 @@ trait GameLogic {
   }
 
   private def checkIfWonOrLost(game: Game, player: Player) {
-    if (game.status.word.forall(_.isDefined)) {
+    if (game.status.letters.forall(_.isDefined)) {
       addSolvedWordIndex(game)
       removeGameOf(player)
       onGameWon(player, game)

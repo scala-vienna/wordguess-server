@@ -30,12 +30,12 @@ class GameLogicSuite extends FunSuite with BeforeAndAfter {
 
   test("valid length of word") {
     val game = logic.createGame(player)
-    assert(testWords(game.wordIdx).length === game.status.word.length)
+    assert(testWords(game.wordIdx).length === game.status.letters.length)
   }
 
   test("initially, word is unsolved") {
     val game = logic.createGame(player)
-    assert(game.status.word.forall(!_.isDefined), "Should not contain any defined letter")
+    assert(game.status.letters.forall(!_.isDefined), "Should not contain any defined letter")
   }
 
   test("initially there is no game for a player") {
@@ -71,9 +71,9 @@ class GameLogicSuite extends FunSuite with BeforeAndAfter {
 
   test("making a correct guess should reveal new letter in status") {
     val game = logic.createGame(player)
-    val revealedBefore = game.status.word.count(_.isDefined)
+    val revealedBefore = game.status.letters.count(_.isDefined)
     logic.makeGuess(player, letter = 'o')
-    val revealedAfter = game.status.word.count(_.isDefined)
+    val revealedAfter = game.status.letters.count(_.isDefined)
     assert(revealedAfter === revealedBefore + 1, "One new letter should have been revealed")
   }
 
