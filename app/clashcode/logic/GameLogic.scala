@@ -7,6 +7,7 @@ import scala.util.Random
 case class Player(name: String)
 case class Game(wordIdx: Int, var status: GameStatus) {
   def isSolved = status.letters.forall(_.isDefined)
+  def isOver = isSolved || status.remainingTries <= 0
   def displayWord = status.letters.map(c => c.getOrElse('_')).mkString
 }
 
@@ -40,7 +41,7 @@ trait GameLogic {
 
   def onGameWon(player: Player, game: Game)
   def onGameLost(player: Player, game: Game)
-
+  
   def gameWords: Seq[GameWord] = {
     val solvedIdxList = gameState.solvedWordIndexes
     for ((wordState, idx) <- gameState.wordStates.zipWithIndex) yield {

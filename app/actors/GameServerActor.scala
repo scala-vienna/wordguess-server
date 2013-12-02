@@ -73,7 +73,7 @@ class GameServerActor extends TickingActor
       game <- getGame(player)
     } yield {
       makeGuess(player, letter)
-      if (!game.isSolved) {
+      if (!game.isOver) {
         Logger.info(s"""Player "${player.name}" guessed '$letter'""")
         actorPlayer.updateLastAction
         sender ! game.status
