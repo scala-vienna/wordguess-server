@@ -6,12 +6,11 @@
 }
 
 #wordsContainer {
-  padding: 50px;
-  font-size: 23pt;
+  font-size: 18pt;
   font-family: monospace;
 }
 
 .underscore {
-  padding-left: 2px;
-  padding-right: 2px;
+  /*padding-left: 2px;
+  padding-right: 2px;*/
 }

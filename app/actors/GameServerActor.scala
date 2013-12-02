@@ -134,6 +134,7 @@ class GameServerActor extends TickingActor
     Application.push(actorPlayers) // send updated player list to frontend
     Application.pushTokens(tokens) // send updated token list to frontend
 
+    Application.pushWords(gameWords)
     DebugController.pushWords(gameWords)
 
     purgeTimedOutGames()

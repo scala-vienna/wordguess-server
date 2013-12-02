@@ -9,10 +9,11 @@ import play.api.libs.json.{ Json, JsValue }
 import akka.actor.ActorRef
 import actors.ActorPlayer
 import clashcode.logic.{ NonWord, Token }
+import actors.GameParameters
 
-object Application extends Controller {
+object Application extends Controller with GameParameters with WordPushing {
 
-  private val (out, channel) = Concurrent.broadcast[JsValue]
+  protected val (out, channel) = Concurrent.broadcast[JsValue]
 
   var maybeHostingActor = Option.empty[ActorRef]
 

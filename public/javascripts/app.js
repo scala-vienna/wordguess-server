@@ -17,14 +17,18 @@ $(function() {
                 $('#players-table tbody').append(
                     $('<tr>')
                         .append($('<td>').text(p.name))
-                        .append($('<td>').text(""))
-                        .append($('<td>').text(""))
                         .append($('<td>').text(p.games))
                         .append($('<td>').text(moment(p.lastAction).fromNow()))
-                        .append($('<td>').text(""))
-                        .append($('<td>').text(""))
                 )
             })
+        } else if (data.words) {
+          var container = $("#wordsContainer");
+          container.empty();
+          $.each(data.words, function(idx, word){
+            var wordHtml = word.html.replace(/_/g, '<span class="underscore">-</span>');
+            var node = $("<span class="+word.cssClass+">"+wordHtml+"</span>");
+            container.append(node);
+          });
         }
         else {
             console.log(data)
