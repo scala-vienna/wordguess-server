@@ -70,6 +70,7 @@ class GameServerActor extends TickingActor
   }
 
   def handleGuess(sender: ActorRef, letter: Char) {
+    debugActors()
     (for {
       actorPlayer <- findActorPlayerByIP(actor = sender)
       player = actorPlayer.player
@@ -84,6 +85,16 @@ class GameServerActor extends TickingActor
     }) getOrElse {
       sender ! NotPlayingError()
     }
+  }
+  
+  private def debugActors() = {
+    Logger.debug("We have these actors:")
+    for((actorPlayer, idx) <- actorPlayers.zipWithIndex) {
+      val name = actorPlayer.player.name
+      val ip = actorPlayer.ipAddress
+      val actorHash = actorPlayer.actor.hashCode
+      Logger.debug(s"${idx+1}) $name: $ip - actorHash: $actorHash")
+    }    
   }
 
   def broadCastToAll(msg: String) {
