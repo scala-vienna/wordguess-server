@@ -4,6 +4,7 @@ import scala.collection.mutable
 import clashcode.logic.Player
 import akka.actor.ActorRef
 import org.joda.time.{ Seconds, DateTime }
+import play.api.Logger
 
 /**
  * statistics about each player are collected here
@@ -36,6 +37,10 @@ trait ActorPlayers {
   /** let's manage one ActorPlayer instance for each player, even if she reconnects */
   def findActorPlayerCreatingIfNeeded(actor: ActorRef, playerName: String): ActorPlayer = {
     val optExisting = findActorPlayerByIP(actor)
+    if (optExisting.isDefined) {
+      Logger.debug(s"A player with this IP exists")
+      Logger.debug(s"Replacing ${optExisting.get.player.name} with ${playerName}")
+    }
     val actorPlayer = optExisting getOrElse {
       // we don't know this ip address, lets create a new player
       val newActorPlayer = new ActorPlayer(
@@ -45,17 +50,21 @@ trait ActorPlayers {
         totalGames = 0)
       // register new ActorPlayer
       actorPlayers += newActorPlayer
+      Logger.debug(s"Registered new actor ($playerName) with IP: ${newActorPlayer.ipAddress}")
       newActorPlayer
     }
 
     val uniquePlayerName = {
       val otherActorWithSameName = findDifferentPlayerAlreadyNamed(actorPlayer, playerName)
-      if (otherActorWithSameName.isDefined)
+      if (otherActorWithSameName.isDefined) {
         // name exists, add IP for uniqueness
-        playerName + "-" + actorPlayer.ipAddress
-      else
+        val newName = playerName + "-" + actorPlayer.ipAddress
+        Logger.debug(s"Changing name from $playerName to $newName")
+        newName
+      } else {
         // otherwise use name as-is (it's good enough)
         playerName
+      }
     }
 
     // update our records about this player
@@ -79,7 +88,15 @@ trait ActorPlayers {
 
   def findActorPlayerByIP(actor: ActorRef): Option[ActorPlayer] = {
     val ipAddressToFind = ActorPlayers.getIpAddress(actor)
-    actorPlayers.find(actorPlayer => actorPlayer.ipAddress == ipAddressToFind)
+    Logger.debug("Trying to find actor with IP: " + ipAddressToFind)
+    val result = actorPlayers.find(actorPlayer => {
+      Logger.debug(s"Comparing to ${actorPlayer.player.name} ${actorPlayer.ipAddress}")
+      actorPlayer.ipAddress == ipAddressToFind
+    })
+    if(result.isDefined) {
+      Logger.debug(s"Found match: ${result.get.player.name}")
+    }
+    result
   }
 
   def allPlayerActorsExcept(actorToExclude: ActorRef): Seq[ActorRef] = {
@@ -98,6 +115,9 @@ trait ActorPlayers {
 
 object ActorPlayers {
   def getIpAddress(actor: ActorRef): String = {
-    actor.path.address.host.getOrElse("127.0.0.1")
+    actor.path.address.host.getOrElse {
+      Logger.debug(s"WARN - Returning 127.0.0.1 for actor: ${actor.toString}")
+      "127.0.0.1"
+    }
   }
 }
