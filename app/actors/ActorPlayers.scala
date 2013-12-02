@@ -116,7 +116,7 @@ trait ActorPlayers {
 object ActorPlayers {
   def getIpAddress(actor: ActorRef): String = {
     actor.path.address.host.getOrElse {
-      Logger.debug(s"WARN - Returning 127.0.0.1 for actor: ${actor.toString}")
+      Logger.warn(s"Returning 127.0.0.1 for actor: ${actor.toString}")
       "127.0.0.1"
     }
   }
