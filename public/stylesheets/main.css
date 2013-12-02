@@ -1,6 +1,12 @@
+
 .playing {
   background: pink;
 }
+
+.noBreak {
+  white-space:nowrap; 
+}
+
 .solved {
   background: lightGreen;
 }
@@ -13,4 +19,8 @@
 .underscore {
   /*padding-left: 2px;
   padding-right: 2px;*/
+}
+
+.container {
+ width: 80%;
 }

@@ -25,8 +25,13 @@ $(function() {
           var container = $("#wordsContainer");
           container.empty();
           $.each(data.words, function(idx, word){
+            var noBreakCss = "";
+            if(word.html.indexOf("_") >= 0){
+              noBreakCss = "noBreak ";
+            }
             var wordHtml = word.html.replace(/_/g, '<span class="underscore">-</span>');
-            var node = $("<span class="+word.cssClass+">"+wordHtml+"</span>");
+            
+            var node = $('<span class="'+noBreakCss+word.cssClass+'">'+wordHtml+'</span>');
             container.append(node);
           });
         }
