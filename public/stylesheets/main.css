@@ -4,3 +4,14 @@
 .solved {
   background: lightGreen;
 }
+
+#wordsContainer {
+  padding: 50px;
+  font-size: 23pt;
+  font-family: monospace;
+}
+
+.underscore {
+  padding-left: 2px;
+  padding-right: 2px;
+}

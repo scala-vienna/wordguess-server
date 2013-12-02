@@ -8,7 +8,8 @@ $(function() {
       var container = $("#wordsContainer");
       container.empty();
       $.each(data.words, function(idx, word){
-        var node = $("<span class="+word.cssClass+">"+word.html+"</span>");
+        var wordHtml = word.html.replace(/_/g, '<span class="underscore">_</span>');
+        var node = $("<span class="+word.cssClass+">"+wordHtml+"</span>");
         container.append(node);
       });
     } else {
