@@ -31,7 +31,7 @@ trait GameLogic {
   def createGame(player: Player): Game = {
     val wordIdx = randomAvailableWordIndex
     def unsolvedWord(idx: Int) = words(wordIdx).map { ignoredChar => None }
-    val gameStatus = GameStatus(letters = unsolvedWord(idx = wordIdx), remainingTries = triesPerGame)
+    val gameStatus = GameStatus(wordIdx, letters = unsolvedWord(idx = wordIdx), remainingTries = triesPerGame)
     val game = Game(wordIdx, status = gameStatus)
     games += player -> game
     game

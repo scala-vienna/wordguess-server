@@ -51,6 +51,9 @@ class GameServerActor extends TickingActor
       val newOrExistingGame = getGame(player) getOrElse {
         createGame(player)
       }
+      val wordIdx = newOrExistingGame.wordIdx
+      val word = words(newOrExistingGame.wordIdx)
+      Logger.info(s"Player $playerName is playing for word: $word ($wordIdx)")
       sender ! newOrExistingGame.status
     } else {
       sender ! NoAvailableGames()
