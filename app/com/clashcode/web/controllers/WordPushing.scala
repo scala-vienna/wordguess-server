@@ -17,10 +17,15 @@ trait WordPushing { this:GameParameters =>
   )
 
   private def gameWordToMap(gameWord: GameWord): Map[String, String] = {
+    val isSolvedWord = {
+      gameWord.str.forall(_.isLetter) &&
+      gameWord.solved && 
+      gameWord.str.length() >= this.minGameWordLength
+    }
     val cssClass =
       if (gameWord.playing)
         "playing"
-      else if (gameWord.solved && gameWord.str.length() >= this.minGameWordLength)
+      else if (isSolvedWord)
         "solved"
       else ""
 
