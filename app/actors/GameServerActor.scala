@@ -17,7 +17,7 @@ trait GameParameters {
   // TODO: read all this from Play's config
   def timeOutSeconds = 5 * 60
   def gameStateFilePath = "./game-state.txt"
-  def minGameWordLength = 5
+  def minGameWordLength = 3
   def maxRequestsPerSecond = 10 // prevent players from brute forcing
 }
 
