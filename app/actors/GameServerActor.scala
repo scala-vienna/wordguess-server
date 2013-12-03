@@ -12,12 +12,14 @@ import clashcode.wordguess.messages._
 import com.clashcode.web.controllers.Application
 import clashcode.logic.GameState
 import com.clashcode.web.controllers.DebugController
+import org.joda.time.DateTime
 
 trait GameParameters {
   // TODO: read all this from Play's config
   def timeOutSeconds = 5 * 60
   def gameStateFilePath = "./game-state.txt"
   def minGameWordLength = 5
+  def maxRequestsPerSecond = 10 // prevent players from brute forcing
 }
 
 /**
@@ -36,9 +38,12 @@ class GameServerActor extends TickingActor
     loadFromFile(gameStateFilePath)
   }
 
+  case class HandleGuessNow(actorPlayer: ActorPlayer, letter: Char)
+
   def receive = {
     case RequestGame(playerName) => handleGameRequest(playerName.take(16), sender) // name max 16 chars
-    case MakeGuess(letter) => handleGuess(sender, letter)
+    case MakeGuess(letter) => delayHandleGuess(sender, letter)
+    case HandleGuessNow(actorPlayer, letter) => handleGuess(actorPlayer, letter)
     case SendToAll(msg) => broadCastToAll(msg)
     case ActorTick() => handleTick()
   }
@@ -68,21 +73,37 @@ class GameServerActor extends TickingActor
     }
   }
 
-  def handleGuess(sender: ActorRef, letter: Char) {
+  /** handle guess now or after 100 milliseconds */
+  def delayHandleGuess(sender: ActorRef, letter: Char) {
     debugActors()
+    findActorPlayerByIP(actor = sender).foreach(actorPlayer => {
+      val artificialDelay = (1000 / maxRequestsPerSecond - DateTime.now.getMillis + actorPlayer.lastAction.getMillis)
+      if (artificialDelay > 0)
+      {
+        println("delaying answer by " + artificialDelay)
+        runDelayed(artificialDelay) {
+          self ! HandleGuessNow(actorPlayer, letter)  // artificial delay to prevent brute force
+        }
+      }
+      else
+      {
+        handleGuess(actorPlayer, letter) // handle it now
+      }
+    })
+  }
+
+  private def handleGuess(actorPlayer: ActorPlayer, letter: Char) {
     (for {
-      actorPlayer <- findActorPlayerByIP(actor = sender)
-      player = actorPlayer.player
-      game <- getGame(player)
+      game <- getGame(actorPlayer.player)
     } yield {
-      makeGuess(player, letter)
+      makeGuess(actorPlayer.player, letter)
       if (!game.isOver) {
-        Logger.info(s"""Player "${player.name}" guessed '$letter'""")
+        Logger.info(s"""Player "${actorPlayer.player.name}" guessed '$letter'""")
         actorPlayer.updateLastAction
-        sender ! game.status
+        actorPlayer.actor ! game.status
       }
     }) getOrElse {
-      sender ! NotPlayingError()
+      actorPlayer.actor ! NotPlayingError()
     }
   }
   

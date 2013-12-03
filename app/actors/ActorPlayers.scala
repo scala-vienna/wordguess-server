@@ -95,9 +95,10 @@ trait ActorPlayers {
       Logger.debug(s"Comparing to ${actorPlayer.player.name} ${actorPlayer.ipAddress}")
       actorPlayer.ipAddress == ipAddressToFind
     })
-    if(result.isDefined) {
-      Logger.debug(s"Found match: ${result.get.player.name}")
-    }
+    result.foreach(found => {
+      Logger.debug(s"Found match: ${found.player.name}")
+      found.actor = actor // update actor ref
+    })
     result
   }
 
