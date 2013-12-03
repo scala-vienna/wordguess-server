@@ -37,7 +37,7 @@ class GameServerActor extends TickingActor
   }
 
   def receive = {
-    case RequestGame(playerName) => handleGameRequest(playerName, sender)
+    case RequestGame(playerName) => handleGameRequest(playerName.take(16), sender) // name max 16 chars
     case MakeGuess(letter) => handleGuess(sender, letter)
     case SendToAll(msg) => broadCastToAll(msg)
     case ActorTick() => handleTick()
