@@ -8,11 +8,11 @@
 }
 
 .solved {
-  background: lightGreen;
+  background: #DBFFE3;
 }
 
 #wordsContainer {
-  font-size: 18pt;
+  font-size: 16pt;
   font-family: monospace;
 }
 
