@@ -23,7 +23,6 @@ object Global extends GlobalSettings {
 
       // start tournament hoster
       val hostingActor = system.actorOf(Props[GameServerActor], "main")
-      Application.maybeHostingActor = Some(hostingActor)
 
       // hosting actor listens to cluster events
       Cluster(system).subscribe(hostingActor, classOf[ClusterDomainEvent])

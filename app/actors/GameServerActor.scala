@@ -11,7 +11,6 @@ import clashcode.logic.Token
 import clashcode.wordguess.messages._
 import com.clashcode.web.controllers.Application
 import clashcode.logic.GameState
-import com.clashcode.web.controllers.DebugController
 import org.joda.time.DateTime
 
 trait GameParameters {
@@ -29,9 +28,6 @@ class GameServerActor extends TickingActor
   with GameLogic with GameStatePersistence with ActorPlayers with GameParameters {
 
   override val gameState = initializeGameState()
-
-  // partially solved text represented as tokens (for frontend)
-  var tokens = Seq.empty[Token]
 
   def initializeGameState(): GameState = {
     ensureGameStateFile(gameStateFilePath, "./source-text.txt", minGameWordLength)
@@ -157,11 +153,10 @@ class GameServerActor extends TickingActor
 
   def handleTick() {
 
-    Application.push(actorPlayers) // send updated player list to frontend
-    Application.pushTokens(tokens) // send updated token list to frontend
-
+    // send updated player list to frontend
+    Application.push(actorPlayers)
+    // send updated word list to frontend
     Application.pushWords(gameWords)
-    DebugController.pushWords(gameWords)
 
     purgeTimedOutGames()
   }

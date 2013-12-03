@@ -15,12 +15,7 @@ object Application extends Controller with GameParameters with WordPushing {
 
   protected val (out, channel) = Concurrent.broadcast[JsValue]
 
-  var maybeHostingActor = Option.empty[ActorRef]
-
-  def pushTokens(tokens: Seq[Token]) = channel.push(
-    Json.obj(
-      "tokens" -> Json.toJson(tokens.map(t => t.str)),
-      "nonWords" -> Json.toJson(tokens.zipWithIndex.filter(_._1.isInstanceOf[NonWord]).map(_._2))))
+  //var maybeHostingActor = Option.empty[ActorRef]
 
   def push(players: Seq[ActorPlayer]) = channel.push(
     Json.obj("players" ->
@@ -36,6 +31,11 @@ object Application extends Controller with GameParameters with WordPushing {
   def index = Action { implicit request =>
     val url = routes.Application.status().webSocketURL()
     Ok(views.html.index(url))
+  }
+  
+  def liveFeed = Action { implicit request =>
+    val url = routes.Application.status().webSocketURL()
+    Ok(views.html.liveFeed(url))
   }
 
   def status = WebSocket.using[JsValue] { request =>
