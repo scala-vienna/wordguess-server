@@ -28,7 +28,8 @@ object Application extends Controller with GameParameters with WordPushing {
         Json.obj(
           "name" -> p.player.name,
           "lastAction" -> p.lastAction,
-          "games" -> p.totalGames)))))
+          "games" -> p.totalGames,
+          "solved" -> p.solvedGames)))))
 
   def push(message: String) = channel.push(Json.obj("status" -> message))
 

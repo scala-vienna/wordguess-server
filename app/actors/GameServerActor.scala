@@ -46,7 +46,6 @@ class GameServerActor extends TickingActor
   def handleGameRequest(playerName: String, sender: ActorRef) {
     if (hasRemainingWords) {
       val actorPlayer = findActorPlayerCreatingIfNeeded(sender, playerName)
-      actorPlayer.totalGames += 1 // update game stats
       val player = actorPlayer.player
       val newOrExistingGame = getGame(player) getOrElse {
         createGame(player)
@@ -124,6 +123,12 @@ class GameServerActor extends TickingActor
 
   private def sendGameOverMessage(player: Player, msg: GameOver) {
     findActorPlayer(player) map { actorPlayer =>
+
+      // update game stats
+      actorPlayer.totalGames += 1
+      if (msg.isInstanceOf[GameWon]) actorPlayer.solvedGames += 1
+
+      // send message
       val actor = actorPlayer.actor
       actor ! msg
     }

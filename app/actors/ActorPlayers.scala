@@ -14,8 +14,9 @@ import play.api.Logger
 class ActorPlayer(var player: Player,
   var actor: ActorRef,
   var lastAction: DateTime = DateTime.now, // last message received from player
-  var totalGames: Int) // # total played games
-  {
+  var totalGames: Int, // # total played games
+  var solvedGames: Int) // # total solved games
+{
   val ipAddress = ActorPlayers.getIpAddress(actor)
 
   def isLastActionOlderThan(maxSeconds: Int): Boolean = {
@@ -47,7 +48,8 @@ trait ActorPlayers {
         Player(playerName),
         actor,
         lastAction = DateTime.now,
-        totalGames = 0)
+        totalGames = 0,
+        solvedGames = 0)
       // register new ActorPlayer
       actorPlayers += newActorPlayer
       Logger.debug(s"Registered new actor ($playerName) with IP: ${newActorPlayer.ipAddress}")

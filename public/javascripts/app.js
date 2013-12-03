@@ -17,7 +17,7 @@ $(function() {
                 $('#players-table tbody').append(
                     $('<tr>')
                         .append($('<td>').text(p.name))
-                        .append($('<td>').text(p.games))
+                        .append($('<td>').text(p.solved + " / " + p.games))
                         .append($('<td>').text(moment(p.lastAction).fromNow()))
                 )
             })
