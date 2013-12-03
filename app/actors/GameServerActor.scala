@@ -25,7 +25,7 @@ trait GameParameters {
  *
  */
 class GameServerActor extends TickingActor
-  with GameLogic with GameStatePersistence with ActorPlayers with GameParameters {
+    with GameLogic with GameStatePersistence with ActorPlayers with GameParameters {
 
   override val gameState = initializeGameState()
 
@@ -46,7 +46,7 @@ class GameServerActor extends TickingActor
 
   def handleGameRequest(playerName: String, sender: ActorRef) {
     if (hasRemainingWords) {
-      val actorPlayer = findActorPlayerCreatingIfNeeded(sender, playerName)
+      val actorPlayer = findActorPlayerCreatingIfNeeded(sender, playerName, onRename = renameGamePlayerName)
       val player = actorPlayer.player
       val newOrExistingGame = getGame(player) getOrElse {
         createGame(player)
@@ -74,15 +74,12 @@ class GameServerActor extends TickingActor
     debugActors()
     findActorPlayerByIP(actor = sender).foreach(actorPlayer => {
       val artificialDelay = (1000 / maxRequestsPerSecond - DateTime.now.getMillis + actorPlayer.lastAction.getMillis)
-      if (artificialDelay > 0)
-      {
+      if (artificialDelay > 0) {
         println("delaying answer by " + artificialDelay)
         runDelayed(artificialDelay) {
-          self ! HandleGuessNow(actorPlayer, letter)  // artificial delay to prevent brute force
+          self ! HandleGuessNow(actorPlayer, letter) // artificial delay to prevent brute force
         }
-      }
-      else
-      {
+      } else {
         handleGuess(actorPlayer, letter) // handle it now
       }
     })
@@ -102,15 +99,15 @@ class GameServerActor extends TickingActor
       actorPlayer.actor ! NotPlayingError()
     }
   }
-  
+
   private def debugActors() = {
     Logger.debug("We have these actors:")
-    for((actorPlayer, idx) <- actorPlayers.zipWithIndex) {
+    for ((actorPlayer, idx) <- actorPlayers.zipWithIndex) {
       val name = actorPlayer.player.name
       val ip = actorPlayer.ipAddress
       val actorHash = actorPlayer.actor.hashCode
-      Logger.debug(s"${idx+1}) $name: $ip - actorHash: $actorHash")
-    }    
+      Logger.debug(s"${idx + 1}) $name: $ip - actorHash: $actorHash")
+    }
   }
 
   def broadCastToAll(msg: String) {

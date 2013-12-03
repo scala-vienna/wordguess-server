@@ -186,4 +186,14 @@ class GameLogicSuite extends FunSuite with BeforeAndAfter {
       GameWord(1, "_____", playing = false, solved = false)))
   }
 
+  test("renaming a player's game") {
+    new HelloGameLogicTest {
+      val game1 = logic.getGame(Player("testPlayer"))
+      logic.renameGamePlayerName("testPlayer", "newPlayerName")
+      val game2 = logic.getGame(Player("newPlayerName"))
+      assert(game1.isDefined, "A game should have been found")
+      assert(game1 === game2, "Should be the same game, the player was just renamed")
+    }
+  }
+
 }

@@ -33,7 +33,7 @@ trait GameLogic {
     def unsolvedWord(idx: Int) = words(wordIdx).map { ignoredChar => None }
     val gameStatus = GameStatus(wordIdx, letters = unsolvedWord(idx = wordIdx), remainingTries = triesPerGame)
     val game = Game(wordIdx, status = gameStatus)
-    games += player -> game
+    games += (player -> game)
     game
   }
 
@@ -87,6 +87,14 @@ trait GameLogic {
     } else if (game.status.remainingTries == 0) {
       removeGameOf(player)
       onGameLost(player, game)
+    }
+  }
+  
+  def renameGamePlayerName(oldPlayerName: String, newPlayerName: String) {
+    val oldPlayer = Player(oldPlayerName)
+    getGame(oldPlayer) foreach { game =>
+      removeGameOf(oldPlayer)
+      games += (Player(newPlayerName) -> game)
     }
   }
 

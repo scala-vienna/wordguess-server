@@ -12,11 +12,11 @@ import play.api.Logger
  * players may change their names
  */
 class ActorPlayer(var player: Player,
-  var actor: ActorRef,
-  var lastAction: DateTime = DateTime.now, // last message received from player
-  var totalGames: Int, // # total played games
-  var solvedGames: Int) // # total solved games
-{
+                  var actor: ActorRef,
+                  var lastAction: DateTime = DateTime.now, // last message received from player
+                  var totalGames: Int, // # total played games
+                  var solvedGames: Int) // # total solved games
+                  {
   val ipAddress = ActorPlayers.getIpAddress(actor)
 
   def isLastActionOlderThan(maxSeconds: Int): Boolean = {
@@ -35,12 +35,19 @@ trait ActorPlayers {
 
   val actorPlayers = mutable.Buffer[ActorPlayer]()
 
-  /** let's manage one ActorPlayer instance for each player, even if she reconnects */
-  def findActorPlayerCreatingIfNeeded(actor: ActorRef, playerName: String): ActorPlayer = {
+  /**
+   * Let's manage one ActorPlayer instance for each player, even if she reconnects.
+   *  If the player is renamed (new name, same IP) optionally a callback can be invoked.
+   */
+  def findActorPlayerCreatingIfNeeded(actor: ActorRef, playerName: String,
+                                      onRename: (String, String) => Unit = (oldName, newName) => {}): ActorPlayer = {
     val optExisting = findActorPlayerByIP(actor)
     if (optExisting.isDefined) {
       Logger.debug(s"A player with this IP exists")
-      Logger.debug(s"Replacing ${optExisting.get.player.name} with ${playerName}")
+      val oldName = optExisting.get.player.name
+      val newName = playerName
+      Logger.debug(s"Replacing ${oldName} with ${newName}")
+      onRename(oldName, newName)
     }
     val actorPlayer = optExisting getOrElse {
       // we don't know this ip address, lets create a new player
