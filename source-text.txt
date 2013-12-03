@@ -1,5 +1,0 @@
-Flight is the process by which an object moves, through an atmosphere (especially the air) or beyond it (as in the case of spaceflight), by generating aerodynamic lift, propulsive thrust, aerostatically using buoyancy, or by ballistic movement, without direct support from any surface.
-
-Many things fly, from natural aviators such as birds, bats and insects to human inventions such as missiles, aircraft such as airplanes, helicopters and balloons, to rockets such as spacecraft.
-
-The engineering aspects of flight are studied in aerospace engineering which is subdivided into aeronautics, the study of vehicles that travel through the air, and astronautics, the study of vehicles that travel through space, and in ballistics, the study of the flight of projectiles.

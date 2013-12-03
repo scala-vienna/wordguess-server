@@ -18,4 +18,5 @@ dist
 bin/
 *.sc
 .worksheet/
-game-state.txt
+/game-state.txt
+/source-text.txt
