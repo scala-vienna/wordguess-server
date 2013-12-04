@@ -14,41 +14,43 @@ import clashcode.wordguess.logic.GameLogic
 trait PlayerStatePersistence { this: GameLogic with ActorPlayers =>
 
   def restorePlayerState() {
-    val f = new File("./player-state.txt")
-    val src = Source.fromFile(f)
-    val lines = src.getLines.filterNot(line => line.trim().isEmpty() || !line.contains('\t'))
-    lines.foreach { line =>
-      val parts = line.split('\t')
-      if (parts.size == 7) {
-        val ip = parts(0)
-        val name = parts(1)
-        val gamesSolved = parts(2).toInt
-        val gamesTotal = parts(3).toInt
-        val wordIdx = parts(4).toInt
-        val letters = parts(5).map { c => if (c == '_') None else Some(c) }
-        val triesLeft = parts(6).toInt
+    val stateFile = new File("./player-state.txt")
+    if (stateFile.exists()) {
+      val src = Source.fromFile(stateFile)
+      val lines = src.getLines.filterNot(line => line.trim().isEmpty() || !line.contains('\t'))
+      lines.foreach { line =>
+        val parts = line.split('\t')
+        if (parts.size == 7) {
+          val ip = parts(0)
+          val name = parts(1)
+          val gamesSolved = parts(2).toInt
+          val gamesTotal = parts(3).toInt
+          val wordIdx = parts(4).toInt
+          val letters = parts(5).map { c => if (c == '_') None else Some(c) }
+          val triesLeft = parts(6).toInt
 
-        val optGame =
-          if (wordIdx >= 0) {
-            val status = GameStatus(gameId = wordIdx, letters, triesLeft)
-            Some(Game(wordIdx, status))
-          } else {
-            None
+          val optGame =
+            if (wordIdx >= 0) {
+              val status = GameStatus(gameId = wordIdx, letters, triesLeft)
+              Some(Game(wordIdx, status))
+            } else {
+              None
+            }
+
+          val player = Player(name)
+          val actorPlayer = new ActorPlayer(player = player,
+            actor = null,
+            totalGames = gamesTotal,
+            solvedGames = gamesSolved,
+            givenIp = Some(ip))
+
+          optGame foreach { game =>
+            Logger.info(s"Restored game [id: ${wordIdx}] of player: ${name}")
+            games += (player -> game)
           }
-
-        val player = Player(name)
-        val actorPlayer = new ActorPlayer(player = player,
-          actor = null,
-          totalGames = gamesTotal,
-          solvedGames = gamesSolved,
-          givenIp = Some(ip))
-
-        optGame foreach { game =>
-          Logger.info(s"Restored game [id: ${wordIdx}] of player: ${name}")
-          games += (player -> game)
+          actorPlayers += actorPlayer
+          Logger.info(s"Restored actorPlayer ${name} with IP: ${ip}")
         }
-        actorPlayers += actorPlayer
-        Logger.info(s"Restored actorPlayer ${name} with IP: ${ip}")
       }
     }
   }
