@@ -3,7 +3,7 @@ package clashcode.wordguess.messages
 // =============
 // Messages sent to particular game-player(s)
 
-case class GameStatus(wordIdx:Int, letters: Seq[Option[Char]], remainingTries: Int)
+case class GameStatus(gameId:Int, letters: Seq[Option[Char]], remainingTries: Int)
 
 abstract class GameOver
   case class GameWon(finalStatus: GameStatus) extends GameOver 
