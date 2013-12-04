@@ -12,6 +12,7 @@ import clashcode.wordguess.messages._
 import com.clashcode.web.controllers.Application
 import clashcode.logic.GameState
 import org.joda.time.DateTime
+import java.io.FileWriter
 
 trait GameParameters {
   // TODO: read all this from Play's config
@@ -42,6 +43,31 @@ class GameServerActor extends TickingActor
     case HandleGuessNow(actorPlayer, letter) => handleGuess(actorPlayer, letter)
     case SendToAll(msg) => broadCastToAll(msg)
     case ActorTick() => handleTick()
+  }
+
+  def dumpPlayersState() {
+    def actorPlayerDumpStr(actorPlayer: ActorPlayer) = {
+      val player = actorPlayer.player
+      val name = player.name
+      val ip = actorPlayer.ipAddress
+      val gamesSolved = actorPlayer.solvedGames
+      val gamesTotal = actorPlayer.totalGames
+      val (wordIdx, wordStatus, tries) = {
+        getGame(player) map { game =>
+          val gameWord = game.status.letters.map { _.getOrElse('_') }.mkString
+          (game.wordIdx, gameWord, game.status.remainingTries)
+        } getOrElse {
+          (-1, "", -1)
+        }
+      }
+      Seq(ip, name, gamesSolved, gamesTotal, wordIdx, wordStatus, tries).mkString("\t")
+    }
+    val writer = new FileWriter("player-state.txt")
+    actorPlayers foreach { actorPlayer =>
+      val str = actorPlayerDumpStr(actorPlayer)
+      writer.write(str + "\n")
+    }
+    writer.close()
   }
 
   def handleGameRequest(playerName: String, sender: ActorRef) {
@@ -155,6 +181,8 @@ class GameServerActor extends TickingActor
     // send updated word list to frontend
     Application.pushWords(gameWords)
 
+    dumpPlayersState()
+    
     purgeTimedOutGames()
   }
 
