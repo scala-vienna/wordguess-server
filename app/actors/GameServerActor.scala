@@ -28,15 +28,17 @@ trait GameParameters {
  *
  */
 class GameServerActor extends TickingActor
-    with GameLogic with GameStatePersistence with ActorPlayers with GameParameters {
+    with GameLogic with GameStatePersistence with ActorPlayers with GameParameters with PlayerStatePersistence {
 
-  override val gameState = initializeGameState()
+  override val gameState = {
+    val gameState = initializeGameState()
+    restorePlayerState()
+    gameState
+  }
 
   def initializeGameState(): GameState = {
     ensureGameStateFile(gameStateFilePath, "./source-text.txt", minGameWordLength)
-    val gameState = loadFromFile(gameStateFilePath)
-    restorePlayerState()
-    gameState
+    loadFromFile(gameStateFilePath)
   }
 
   case class HandleGuessNow(actorPlayer: ActorPlayer, letter: Char)
@@ -47,71 +49,6 @@ class GameServerActor extends TickingActor
     case HandleGuessNow(actorPlayer, letter) => handleGuess(actorPlayer, letter)
     case SendToAll(msg) => broadCastToAll(msg)
     case ActorTick() => handleTick()
-  }
-
-  def restorePlayerState() {
-    val f = new File("./player-state.txt")
-    val src = Source.fromFile(f)
-    val lines = src.getLines.filterNot(line => line.trim().isEmpty() || !line.contains('\t'))
-    lines.foreach { line =>
-      val parts = line.split('\t')
-      if (parts.size == 7) {
-        val ip = parts(0)
-        val name = parts(1)
-        val gamesSolved = parts(2).toInt
-        val gamesTotal = parts(3).toInt
-        val wordIdx = parts(4).toInt
-        val letters = parts(5).map { c => if (c == '_') None else Some(c) }
-        val triesLeft = parts(6).toInt
-
-        val optGame =
-          if (wordIdx >= 0) {
-            val status = GameStatus(gameId = wordIdx, letters, triesLeft)
-            Some(Game(wordIdx, status))
-          } else {
-            None
-          }
-        
-        val player = Player(name)
-        val actorPlayer = new ActorPlayer(player = player,
-          actor = null,
-          totalGames = gamesTotal,
-          solvedGames = gamesSolved,
-          givenIp = Some(ip))
-
-        optGame foreach { game =>
-          Logger.info(s"Restored game [id: ${wordIdx}] of player: ${name}")
-          games += (player -> game) 
-        }
-        actorPlayers += actorPlayer
-        Logger.info(s"Restored actorPlayer ${name} with IP: ${ip}")
-      }
-    }
-  }
-
-  def dumpPlayersState() {
-    def actorPlayerDumpStr(actorPlayer: ActorPlayer) = {
-      val player = actorPlayer.player
-      val name = player.name
-      val ip = actorPlayer.ipAddress
-      val gamesSolved = actorPlayer.solvedGames
-      val gamesTotal = actorPlayer.totalGames
-      val (wordIdx, wordStatus, tries) = {
-        getGame(player) map { game =>
-          val gameWord = game.status.letters.map { _.getOrElse('_') }.mkString
-          (game.wordIdx, gameWord, game.status.remainingTries)
-        } getOrElse {
-          (-1, "[none]", -1)
-        }
-      }
-      Seq(ip, name, gamesSolved, gamesTotal, wordIdx, wordStatus, tries).mkString("\t")
-    }
-    val writer = new FileWriter("./player-state.txt")
-    actorPlayers foreach { actorPlayer =>
-      val str = actorPlayerDumpStr(actorPlayer)
-      writer.write(str + "\n")
-    }
-    writer.close()
   }
 
   def handleGameRequest(playerName: String, sender: ActorRef) {
