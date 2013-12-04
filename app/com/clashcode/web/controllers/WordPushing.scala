@@ -1,6 +1,6 @@
 package com.clashcode.web.controllers
 
-import clashcode.logic.GameWord
+import clashcode.wordguess.logic.GameWord
 import actors.GameParameters
 import play.api.libs.iteratee.Concurrent.Channel
 import play.api.libs.json.JsValue

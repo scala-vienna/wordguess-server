@@ -1,4 +1,4 @@
-package clashcode.logic
+package clashcode.wordguess.logic
 
 import scala.collection.mutable
 import scala.io.Source

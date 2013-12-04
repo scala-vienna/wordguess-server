@@ -1,4 +1,4 @@
-package clashcode.logic
+package clashcode.wordguess.logic
 
 import scala.util.parsing.combinator._
 

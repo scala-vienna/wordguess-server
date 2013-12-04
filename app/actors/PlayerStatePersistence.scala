@@ -7,9 +7,9 @@ import java.io.FileWriter
 import play.api.Logger
 
 import clashcode.wordguess.messages.GameStatus
-import clashcode.logic.Game
-import clashcode.logic.Player
-import clashcode.logic.GameLogic
+import clashcode.wordguess.logic.Game
+import clashcode.wordguess.logic.Player
+import clashcode.wordguess.logic.GameLogic
 
 trait PlayerStatePersistence { this: GameLogic with ActorPlayers =>
 

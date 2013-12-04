@@ -1,4 +1,4 @@
-package clashcode.logic
+package clashcode.wordguess.logic
 
 case class WordState(word: String, var solved: Boolean = false)
 case class GameState(wordStates: List[WordState]) {

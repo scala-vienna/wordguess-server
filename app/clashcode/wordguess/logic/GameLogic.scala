@@ -1,4 +1,4 @@
-package clashcode.logic
+package clashcode.wordguess.logic
 
 import clashcode.wordguess.messages.GameStatus
 import scala.collection.mutable

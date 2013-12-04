@@ -1,7 +1,7 @@
 package actors
 
 import scala.collection.mutable
-import clashcode.logic.Player
+import clashcode.wordguess.logic.Player
 import akka.actor.ActorRef
 import org.joda.time.{ Seconds, DateTime }
 import play.api.Logger

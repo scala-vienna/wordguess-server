@@ -8,14 +8,11 @@ import play.api.Logger
 import play.api.libs.json.{ Json, JsValue }
 import akka.actor.ActorRef
 import actors.ActorPlayer
-import clashcode.logic.{ NonWord, Token }
 import actors.GameParameters
 
 object Application extends Controller with GameParameters with WordPushing {
 
   protected val (out, channel) = Concurrent.broadcast[JsValue]
-
-  //var maybeHostingActor = Option.empty[ActorRef]
 
   def push(players: Seq[ActorPlayer]) = channel.push(
     Json.obj("players" ->

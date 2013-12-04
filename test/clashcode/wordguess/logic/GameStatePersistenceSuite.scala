@@ -1,4 +1,4 @@
-package clashcode.logic
+package clashcode.wordguess.logic
 
 import org.scalatest.FunSuite
 import scala.io.Source

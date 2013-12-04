@@ -1,4 +1,4 @@
-package clashcode.logic
+package clashcode.wordguess.logic
 
 import scala.io.Source
 import org.apache.commons.lang.StringEscapeUtils
