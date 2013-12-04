@@ -20,3 +20,4 @@ bin/
 .worksheet/
 /game-state.txt
 /source-text.txt
+/player-state.txt

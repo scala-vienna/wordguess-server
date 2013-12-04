@@ -15,9 +15,9 @@ class ActorPlayer(var player: Player,
                   var actor: ActorRef,
                   var lastAction: DateTime = DateTime.now, // last message received from player
                   var totalGames: Int, // # total played games
-                  var solvedGames: Int) // # total solved games
-                  {
-  val ipAddress = ActorPlayers.getIpAddress(actor)
+                  var solvedGames: Int, // # total solved games
+                  val givenIp: Option[String] = None) {
+  val ipAddress = givenIp getOrElse ActorPlayers.getIpAddress(actor)
 
   def isLastActionOlderThan(maxSeconds: Int): Boolean = {
     val now = DateTime.now()
@@ -56,7 +56,8 @@ trait ActorPlayers {
         actor,
         lastAction = DateTime.now,
         totalGames = 0,
-        solvedGames = 0)
+        solvedGames = 0,
+        givenIp = None)
       // register new ActorPlayer
       actorPlayers += newActorPlayer
       Logger.debug(s"Registered new actor ($playerName) with IP: ${newActorPlayer.ipAddress}")

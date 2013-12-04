@@ -13,6 +13,8 @@ import com.clashcode.web.controllers.Application
 import clashcode.logic.GameState
 import org.joda.time.DateTime
 import java.io.FileWriter
+import java.io.File
+import scala.io.Source
 
 trait GameParameters {
   // TODO: read all this from Play's config
@@ -32,7 +34,9 @@ class GameServerActor extends TickingActor
 
   def initializeGameState(): GameState = {
     ensureGameStateFile(gameStateFilePath, "./source-text.txt", minGameWordLength)
-    loadFromFile(gameStateFilePath)
+    val gameState = loadFromFile(gameStateFilePath)
+    restorePlayerState()
+    gameState
   }
 
   case class HandleGuessNow(actorPlayer: ActorPlayer, letter: Char)
@@ -43,6 +47,46 @@ class GameServerActor extends TickingActor
     case HandleGuessNow(actorPlayer, letter) => handleGuess(actorPlayer, letter)
     case SendToAll(msg) => broadCastToAll(msg)
     case ActorTick() => handleTick()
+  }
+
+  def restorePlayerState() {
+    val f = new File("./player-state.txt")
+    val src = Source.fromFile(f)
+    val lines = src.getLines.filterNot(line => line.trim().isEmpty() || !line.contains('\t'))
+    lines.foreach { line =>
+      val parts = line.split('\t')
+      if (parts.size == 7) {
+        val ip = parts(0)
+        val name = parts(1)
+        val gamesSolved = parts(2).toInt
+        val gamesTotal = parts(3).toInt
+        val wordIdx = parts(4).toInt
+        val letters = parts(5).map { c => if (c == '_') None else Some(c) }
+        val triesLeft = parts(6).toInt
+
+        val optGame =
+          if (wordIdx >= 0) {
+            val status = GameStatus(gameId = wordIdx, letters, triesLeft)
+            Some(Game(wordIdx, status))
+          } else {
+            None
+          }
+        
+        val player = Player(name)
+        val actorPlayer = new ActorPlayer(player = player,
+          actor = null,
+          totalGames = gamesTotal,
+          solvedGames = gamesSolved,
+          givenIp = Some(ip))
+
+        optGame foreach { game =>
+          Logger.info(s"Restored game [id: ${wordIdx}] of player: ${name}")
+          games += (player -> game) 
+        }
+        actorPlayers += actorPlayer
+        Logger.info(s"Restored actorPlayer ${name} with IP: ${ip}")
+      }
+    }
   }
 
   def dumpPlayersState() {
@@ -57,12 +101,12 @@ class GameServerActor extends TickingActor
           val gameWord = game.status.letters.map { _.getOrElse('_') }.mkString
           (game.wordIdx, gameWord, game.status.remainingTries)
         } getOrElse {
-          (-1, "", -1)
+          (-1, "[none]", -1)
         }
       }
       Seq(ip, name, gamesSolved, gamesTotal, wordIdx, wordStatus, tries).mkString("\t")
     }
-    val writer = new FileWriter("player-state.txt")
+    val writer = new FileWriter("./player-state.txt")
     actorPlayers foreach { actorPlayer =>
       val str = actorPlayerDumpStr(actorPlayer)
       writer.write(str + "\n")
@@ -182,7 +226,7 @@ class GameServerActor extends TickingActor
     Application.pushWords(gameWords)
 
     dumpPlayersState()
-    
+
     purgeTimedOutGames()
   }
 
