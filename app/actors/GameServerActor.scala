@@ -51,6 +51,15 @@ class GameServerActor extends TickingActor
     case ActorTick() => handleTick()
   }
 
+  def reassignActorRef(actor: ActorRef) {
+    findActorPlayerByIP(actor) foreach { actorPlayer =>
+      if (actorPlayer.actor == null) {
+        Logger.debug("Re-assigned actorRef to: " + actorPlayer.player.name)
+        actorPlayer.actor = actor
+      }
+    }
+  }
+
   def handleGameRequest(playerName: String, sender: ActorRef) {
     if (hasRemainingWords) {
       val actorPlayer = findActorPlayerCreatingIfNeeded(sender, playerName, onRename = renameGamePlayerName)
@@ -58,6 +67,7 @@ class GameServerActor extends TickingActor
       val newOrExistingGame = getGame(player) getOrElse {
         createGame(player)
       }
+      reassignActorRef(sender)
       val wordIdx = newOrExistingGame.wordIdx
       val word = words(newOrExistingGame.wordIdx)
       Logger.info(s"Player $playerName is playing for word: $word ($wordIdx)")
@@ -78,6 +88,7 @@ class GameServerActor extends TickingActor
 
   /** handle guess now or after 100 milliseconds */
   def delayHandleGuess(sender: ActorRef, letter: Char) {
+    reassignActorRef(sender)
     debugActors()
     findActorPlayerByIP(actor = sender).foreach(actorPlayer => {
       val artificialDelay = (1000 / maxRequestsPerSecond - DateTime.now.getMillis + actorPlayer.lastAction.getMillis)
@@ -112,13 +123,12 @@ class GameServerActor extends TickingActor
     for ((actorPlayer, idx) <- actorPlayers.zipWithIndex) {
       val name = actorPlayer.player.name
       val ip = actorPlayer.ipAddress
-      val actorHash = actorPlayer.actor.hashCode
-      Logger.debug(s"${idx + 1}) $name: $ip - actorHash: $actorHash")
+      Logger.debug(s"${idx + 1}) $name: $ip")
     }
   }
 
   def broadCastToAll(msg: String) {
-    allPlayerActors foreach { actor =>
+    allPlayerActors filter (_ != null) foreach { actor =>
       actor ! MsgToAll(msg)
     }
   }
