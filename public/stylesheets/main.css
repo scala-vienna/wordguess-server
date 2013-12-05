@@ -1,0 +1,26 @@
+
+.playing {
+  background: #D18888;
+}
+
+.noBreak {
+  white-space:nowrap; 
+}
+
+.solved {
+  background: #70e287;
+}
+
+#wordsContainer {
+  font-size: 16pt;
+  font-family: monospace;
+}
+
+.underscore {
+  /*padding-left: 2px;
+  padding-right: 2px;*/
+}
+
+.container {
+ width: 80%;
+}

@@ -1,6 +1,6 @@
 @(websocketUrl: String)
 
-@main("WordGuess - Players") {
+@main("WordGuess - Live Feed") {
 
     <script>
         var wsUri = "@websocketUrl";
@@ -8,7 +8,7 @@
 
     <div class="container">
       <div>
-        <h1>WordGuess Players</h1>
+        <h1>WordGuess Live Feed</h1>
       </div>
   
       <div class="row">
@@ -31,7 +31,9 @@
                 </tbody>
               </table>
           </div>
-          <div class="col-md-8"></div>
+          <div class="col-md-8" id="wordsContainer">
+            
+          </div>
       </div>
     </div>
 

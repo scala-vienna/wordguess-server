@@ -17,3 +17,9 @@ dist
 .target/
 game-state.txt
 source-text.txt
+bin/
+*.sc
+.worksheet/
+/game-state.txt
+/source-text.txt
+/player-state.txt
