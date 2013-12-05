@@ -4,11 +4,9 @@ $(function() {
     function update(data) {
 
         if (data.status) {
-
-            $('#status-table tbody').prepend($('<tr>').append($('<td>').text(data.status)))
-            while ($('#status-table tbody tr').length > 15) {
-                $('#status-table tbody tr').last().remove()
-            }
+            var container = $('#status-table tbody');
+            container.empty();
+            container.prepend($('<tr>').append($('<td>').text(data.status)))
         }
         else if (data.players) {
             $('#players-table tbody').empty();
@@ -47,7 +45,7 @@ $(function() {
         update({ status: "Connected"})
     };
     websocket.onclose = function(evt) {
-        update({ status: "Disconnected"})
+        update({ status: "Disconnected (start server & reload page)"})
     };
     websocket.onmessage = function(evt) { update(jQuery.parseJSON(evt.data)) };
     websocket.onerror = function(evt) { update({ status: evt.data}) };

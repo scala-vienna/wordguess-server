@@ -1,6 +1,6 @@
 
 .playing {
-  background: pink;
+  background: #D18888;
 }
 
 .noBreak {
@@ -8,7 +8,7 @@
 }
 
 .solved {
-  background: #DBFFE3;
+  background: #70e287;
 }
 
 #wordsContainer {
